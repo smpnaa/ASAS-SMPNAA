@@ -19,8 +19,27 @@
     .btn-finish { background: #1d4ed8; color: #fff; }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .timer { background: #fee2e2; color: #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 16px; }
-    .opsi-item { display: flex; align-items: center; gap: 10px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
-    .opsi-item input { width: auto; margin: 0; }
+
+    /* Styling soal & paragraf bacaan */
+    .soal-wrapper { font-size: 16px; line-height: 1.7; color: #0f172a; margin-bottom: 18px; }
+    .soal-pengantar { font-weight: 600; margin-bottom: 10px; }
+    .bacaan-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #0f766e;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 10px 0 14px;
+      font-weight: 400;
+      font-size: 15.5px;
+      line-height: 1.75;
+    }
+    .bacaan-box p { margin: 0 0 10px; text-indent: 1.5em; }
+    .bacaan-box p:last-child { margin-bottom: 0; }
+    .soal-tanya { font-weight: 600; margin-top: 8px; }
+
+    .opsi-item { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; line-height: 1.5; }
+    .opsi-item input { width: auto; margin: 3px 0 0; }
     .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; margin-top: 12px; }
     .q-btn { padding: 8px 0; font-size: 13px; border-radius: 6px; background: #e2e8f0; color: #1e293b; }
     .q-btn.answered { background: #10b981; color: #fff; }
@@ -63,7 +82,7 @@
 
       <div class="card">
         <div style="font-size:13px; color:#64748b; margin-bottom:6px;">Soal Nomor <span id="noSoalAktif"></span></div>
-        <div id="teksSoal" style="font-size:17px; font-weight:600; margin-bottom:16px;"></div>
+        <div id="teksSoal" class="soal-wrapper"></div>
         <div id="daftarOpsi"></div>
 
         <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
@@ -95,7 +114,52 @@
 
     const STORAGE_KEY = 'cbt_asas_state_v1';
 
-    // Pulihkan sesi jika sempat refresh
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Mengubah pemisah baris / atau newline menjadi paragraf & baris rapi
+    function formatPertanyaanHtml(rawText) {
+      const normalized = String(rawText || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\s+\/\s+\/\s+/g, '\n\n')
+        .replace(/\s+\/\s+/g, '\n');
+
+      const parts = normalized
+        .split(/\n\s*\n/)
+        .map(p => p.trim())
+        .filter(Boolean);
+
+      if (parts.length <= 1) {
+        return `<div class="soal-tanya">${escapeHtml(normalized).replace(/\n/g, '<br>')}</div>`;
+      }
+
+      const tanyaTerakhir = parts[parts.length - 1];
+      const bagianAwal = parts.slice(0, -1);
+
+      let pengantarHtml = '';
+      let bacaanParts = bagianAwal;
+
+      if (bagianAwal.length > 1 && bagianAwal[0].length < 110 && /[:!]$/.test(bagianAwal[0])) {
+        pengantarHtml = `<div class="soal-pengantar">${escapeHtml(bagianAwal[0])}</div>`;
+        bacaanParts = bagianAwal.slice(1);
+      }
+
+      const paragrafBacaan = bacaanParts
+        .map(blk => `<p>${escapeHtml(blk).replace(/\n/g, '<br>')}</p>`)
+        .join('');
+
+      return `
+        ${pengantarHtml}
+        <div class="bacaan-box">${paragrafBacaan}</div>
+        <div class="soal-tanya">${escapeHtml(tanyaTerakhir).replace(/\n/g, '<br>')}</div>
+      `;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -127,7 +191,6 @@
       };
 
       try {
-        // Menggunakan text/plain agar lebih aman dari hambatan preflight CORS di beberapa browser
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -195,18 +258,16 @@
     }
 
     function renderQuestion(idx) {
-  currentIdx = idx;
-  const item = state.soal[idx];
-  document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
-  document.getElementById('teksSoal').textContent = item.pertanyaan;
+      currentIdx = idx;
+      const item = state.soal[idx];
+      document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
+      document.getElementById('teksSoal').innerHTML = formatPertanyaanHtml(item.pertanyaan);
 
-  // Tampilkan tombol Selesai & Kirim hanya di soal paling akhir
-  const btnFinish = document.getElementById('btnFinish');
-  const isLastQuestion = idx === state.soal.length - 1;
-  btnFinish.classList.toggle('hidden', !isLastQuestion);
+      const btnFinish = document.getElementById('btnFinish');
+      const isLastQuestion = idx === state.soal.length - 1;
+      btnFinish.classList.toggle('hidden', !isLastQuestion);
 
-  const opsiContainer = document.getElementById('daftarOpsi');
-  // ... sisa kode renderQuestion tetap sama ...
+      const opsiContainer = document.getElementById('daftarOpsi');
       opsiContainer.innerHTML = '';
 
       ['A', 'B', 'C', 'D'].forEach(huruf => {
