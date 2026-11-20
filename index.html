@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBT ASAS Daring</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: #f3f6fa; color: #1e293b; }
+    .container { max-width: 760px; margin: 24px auto; padding: 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 16px; }
+    h1, h2, h3 { margin-top: 0; }
+    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    input, select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; font-size: 15px; }
+    button { cursor: pointer; border: none; border-radius: 8px; padding: 11px 16px; font-size: 15px; font-weight: 600; }
+    .btn-primary { background: #0f766e; color: #fff; width: 100%; }
+    .btn-nav { background: #e2e8f0; color: #1e293b; }
+    .btn-warn { background: #f59e0b; color: #fff; }
+    .btn-finish { background: #1d4ed8; color: #fff; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .timer { background: #fee2e2; color: #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 16px; }
+    .opsi-item { display: flex; align-items: center; gap: 10px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
+    .opsi-item input { width: auto; margin: 0; }
+    .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; margin-top: 12px; }
+    .q-btn { padding: 8px 0; font-size: 13px; border-radius: 6px; background: #e2e8f0; color: #1e293b; }
+    .q-btn.answered { background: #10b981; color: #fff; }
+    .q-btn.doubt { background: #f59e0b; color: #fff; }
+    .q-btn.active { outline: 2px solid #0f172a; }
+    .alert { background: #fef2f2; color: #991b1b; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- FORM LOGIN -->
+    <div id="loginBox" class="card">
+      <h2>ASAS Daring — Verifikasi Peserta</h2>
+      <p style="color:#475569; font-size:14px;">Masukkan data sesuai arahan panitia/pengawas ujian.</p>
+      <div id="loginError" class="alert hidden"></div>
+      <form id="loginForm">
+        <label for="noPeserta">Nomor Peserta</label>
+        <input id="noPeserta" type="text" required placeholder="Contoh: 2627-07-001" />
+
+        <label for="kodeMapel">Kode Mata Pelajaran</label>
+        <input id="kodeMapel" type="text" required placeholder="Contoh: MTK-07" />
+
+        <label for="tokenUjian">Token Sesi</label>
+        <input id="tokenUjian" type="text" required placeholder="Masukkan token ujian" />
+
+        <button id="btnMulai" type="submit" class="btn-primary">Mulai Ujian</button>
+      </form>
+    </div>
+
+    <!-- AREA UJIAN -->
+    <div id="examBox" class="hidden">
+      <div class="card topbar">
+        <div>
+          <strong id="infoNama"></strong> • <span id="infoKelas"></span><br/>
+          <small id="infoMapel" style="color:#475569;"></small>
+        </div>
+        <div id="timerBox" class="timer">00:00</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px; color:#64748b; margin-bottom:6px;">Soal Nomor <span id="noSoalAktif"></span></div>
+        <div id="teksSoal" style="font-size:17px; font-weight:600; margin-bottom:16px;"></div>
+        <div id="daftarOpsi"></div>
+
+        <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+          <button type="button" id="btnPrev" class="btn-nav">Sebelumnya</button>
+          <button type="button" id="btnDoubt" class="btn-warn">Ragu-ragu</button>
+          <button type="button" id="btnNext" class="btn-nav">Selanjutnya</button>
+          <button type="button" id="btnFinish" class="btn-finish" style="margin-left:auto;">Selesai & Kirim</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Navigasi Soal</strong>
+        <div id="navGrid" class="nav-grid"></div>
+      </div>
+    </div>
+
+    <!-- HASIL -->
+    <div id="resultBox" class="card hidden">
+      <h2>Ujian Selesai</h2>
+      <p id="resultSummary"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw6NyO_oB5eYMA0in5_fR68GjREyEmVYbvzRfuu0BNS04wwy6bqsA9eFEZZa2qYjZSJEA/exec';
+    let state = null;
+    let currentIdx = 0;
+    let timerInterval = null;
+
+    const STORAGE_KEY = 'cbt_asas_state_v1';
+
+    // Pulihkan sesi jika sempat refresh
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+          if (state && state.soal && Date.now() < state.endTime) {
+            showExamScreen();
+            return;
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        } catch (_) {}
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('btnMulai');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Memeriksa data...';
+
+      const payload = {
+        action: 'mulai_ujian',
+        no_peserta: document.getElementById('noPeserta').value.trim(),
+        kode_mapel: document.getElementById('kodeMapel').value.trim(),
+        token: document.getElementById('tokenUjian').value.trim()
+      };
+
+      try {
+        // Menggunakan text/plain agar lebih aman dari hambatan preflight CORS di beberapa browser
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!json.ok) {
+          throw new Error(json.message || 'Gagal memulai ujian.');
+        }
+
+        const durasiMs = (json.data.sesi.durasi_menit || 60) * 60 * 1000;
+        state = {
+          peserta: json.data.peserta,
+          sesi: json.data.sesi,
+          waktu_mulai: json.data.waktu_mulai,
+          endTime: Date.now() + durasiMs,
+          soal: json.data.soal,
+          jawaban: {},
+          ragu: {}
+        };
+        saveState();
+        showExamScreen();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Mulai Ujian';
+      }
+    });
+
+    function saveState() {
+      if (state) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function showExamScreen() {
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('examBox').classList.remove('hidden');
+      document.getElementById('infoNama').textContent = state.peserta.nama;
+      document.getElementById('infoKelas').textContent = state.peserta.kelas;
+      document.getElementById('infoMapel').textContent = `${state.sesi.nama_mapel} (${state.sesi.kode_mapel})`;
+
+      renderQuestion(0);
+      renderNavGrid();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const tick = () => {
+        const sisaMs = state.endTime - Date.now();
+        if (sisaMs <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timerBox').textContent = '00:00';
+          submitExam('AUTO_TIMEOUT');
+          return;
+        }
+        const totalDetik = Math.floor(sisaMs / 1000);
+        const menit = String(Math.floor(totalDetik / 60)).padStart(2, '0');
+        const detik = String(totalDetik % 60).padStart(2, '0');
+        document.getElementById('timerBox').textContent = `${menit}:${detik}`;
+      };
+      tick();
+      timerInterval = setInterval(tick, 1000);
+    }
+
+    function renderQuestion(idx) {
+      currentIdx = idx;
+      const item = state.soal[idx];
+      document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
+      document.getElementById('teksSoal').textContent = item.pertanyaan;
+
+      const opsiContainer = document.getElementById('daftarOpsi');
+      opsiContainer.innerHTML = '';
+
+      ['A', 'B', 'C', 'D'].forEach(huruf => {
+        const teksOpsi = item.opsi[huruf];
+        if (!teksOpsi) return;
+
+        const label = document.createElement('label');
+        label.className = 'opsi-item';
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'opsiSoal';
+        radio.value = huruf;
+        radio.checked = state.jawaban[String(item.no)] === huruf;
+        radio.addEventListener('change', () => {
+          state.jawaban[String(item.no)] = huruf;
+          saveState();
+          renderNavGrid();
+        });
+
+        const span = document.createElement('span');
+        span.textContent = `${huruf}. ${teksOpsi}`;
+
+        label.appendChild(radio);
+        label.appendChild(span);
+        opsiContainer.appendChild(label);
+      });
+
+      renderNavGrid();
+    }
+
+    function renderNavGrid() {
+      const grid = document.getElementById('navGrid');
+      grid.innerHTML = '';
+      state.soal.forEach((item, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-btn';
+        btn.textContent = item.no;
+
+        const noStr = String(item.no);
+        if (state.ragu[noStr]) btn.classList.add('doubt');
+        else if (state.jawaban[noStr]) btn.classList.add('answered');
+        if (idx === currentIdx) btn.classList.add('active');
+
+        btn.addEventListener('click', () => renderQuestion(idx));
+        grid.appendChild(btn);
+      });
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => {
+      if (currentIdx > 0) renderQuestion(currentIdx - 1);
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+      if (currentIdx < state.soal.length - 1) renderQuestion(currentIdx + 1);
+    });
+
+    document.getElementById('btnDoubt').addEventListener('click', () => {
+      const noStr = String(state.soal[currentIdx].no);
+      state.ragu[noStr] = !state.ragu[noStr];
+      saveState();
+      renderNavGrid();
+    });
+
+    document.getElementById('btnFinish').addEventListener('click', () => {
+      const terjawab = Object.keys(state.jawaban).length;
+      const yakin = confirm(`Anda sudah menjawab ${terjawab} dari ${state.soal.length} soal. Yakin ingin mengirim jawaban sekarang?`);
+      if (yakin) submitExam('NORMAL');
+    });
+
+    async function submitExam(statusSubmit) {
+      clearInterval(timerInterval);
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'kirim_jawaban',
+            no_peserta: state.peserta.no_peserta,
+            kode_mapel: state.sesi.kode_mapel,
+            waktu_mulai: state.waktu_mulai,
+            jawaban: state.jawaban,
+            status_submit: statusSubmit
+          })
+        });
+        const json = await res.json();
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById('examBox').classList.add('hidden');
+        document.getElementById('resultBox').classList.remove('hidden');
+
+        if (json.ok) {
+          document.getElementById('resultSummary').textContent =
+            `Terima kasih, ${state.peserta.nama}. Jawaban Anda telah terekam dengan nilai akhir: ${json.data.nilai_akhir} (Benar: ${json.data.benar} dari ${json.data.total_soal} soal).`;
+        } else {
+          document.getElementById('resultSummary').textContent =
+            `Status pengiriman: ${json.message}`;
+        }
+      } catch (err) {
+        alert('Gagal mengirim jawaban ke server. Jangan tutup halaman ini, coba klik Selesai lagi dalam beberapa saat.');
+      }
+    }
+  </script>
+</body>
+</html>
