@@ -195,12 +195,18 @@
     }
 
     function renderQuestion(idx) {
-      currentIdx = idx;
-      const item = state.soal[idx];
-      document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
-      document.getElementById('teksSoal').textContent = item.pertanyaan;
+  currentIdx = idx;
+  const item = state.soal[idx];
+  document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
+  document.getElementById('teksSoal').textContent = item.pertanyaan;
 
-      const opsiContainer = document.getElementById('daftarOpsi');
+  // Tampilkan tombol Selesai & Kirim hanya di soal paling akhir
+  const btnFinish = document.getElementById('btnFinish');
+  const isLastQuestion = idx === state.soal.length - 1;
+  btnFinish.classList.toggle('hidden', !isLastQuestion);
+
+  const opsiContainer = document.getElementById('daftarOpsi');
+  // ... sisa kode renderQuestion tetap sama ...
       opsiContainer.innerHTML = '';
 
       ['A', 'B', 'C', 'D'].forEach(huruf => {
