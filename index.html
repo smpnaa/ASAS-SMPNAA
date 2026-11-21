@@ -3,46 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CBT ASAS Daring</title>
+  <title>CBT ASAS — SMPNAA</title>
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background: #f3f6fa; color: #1e293b; }
-    .container { max-width: 760px; margin: 24px auto; padding: 16px; }
-    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 16px; }
-    h1, h2, h3 { margin-top: 0; }
-    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-    input, select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; font-size: 15px; }
-    button { cursor: pointer; border: none; border-radius: 8px; padding: 11px 16px; font-size: 15px; font-weight: 600; }
-    .btn-primary { background: #0f766e; color: #fff; width: 100%; }
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --accent: #d97706;
+      --bg: #eef3f7;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --soft: #f0fdfa;
+    }
+
+    * { box-sizing: border-box; font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 42%),
+        radial-gradient(circle at bottom left, rgba(217, 119, 6, 0.07), transparent 40%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 20px 16px 36px; }
+
+    /* Brand Header */
+    .brand-header {
+      background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 24px rgba(15, 118, 110, 0.18);
+      margin-bottom: 18px;
+    }
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 4px;
+      object-fit: contain;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    .brand-fallback {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .brand-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.2px; }
+    .brand-sub { margin: 3px 0 0; font-size: 13px; color: #ccfbf1; }
+    .brand-badge {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+      animation: fadeIn 0.22s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2, h3 { margin-top: 0; color: var(--text); }
+    label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #1e293b; }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #fff;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      transition: transform 0.12s, filter 0.15s, background-color 0.15s;
+    }
+    button:active:not(:disabled) { transform: scale(0.98); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; width: 100%; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.22); }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.05); }
     .btn-secondary { background: #e2e8f0; color: #1e293b; }
+    .btn-secondary:hover:not(:disabled) { background: #cbd5e1; }
     .btn-nav { background: #e2e8f0; color: #1e293b; }
+    .btn-nav:hover:not(:disabled) { background: #cbd5e1; }
     .btn-warn { background: #f59e0b; color: #fff; }
+    .btn-warn:hover:not(:disabled) { background: #d97706; }
     .btn-finish { background: #1d4ed8; color: #fff; }
+    .btn-finish:hover:not(:disabled) { background: #1e40af; }
 
     .biodata-box {
-      background: #f0fdfa;
+      background: var(--soft);
       border: 1px solid #99f6e4;
-      border-left: 4px solid #0f766e;
-      border-radius: 10px;
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
       padding: 14px 16px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
-    .biodata-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px dashed #ccfbf1; font-size: 14.5px; }
+    .biodata-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px dashed #99f6e4;
+      font-size: 14.5px;
+    }
     .biodata-row:last-child { border-bottom: none; }
-    .biodata-label { color: #475569; font-weight: 500; }
-    .biodata-val { color: #0f172a; font-weight: 700; text-align: right; }
+    .biodata-label { color: var(--muted); font-weight: 600; }
+    .biodata-val { color: var(--text); font-weight: 700; text-align: right; }
 
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .timer { background: #fee2e2; color: #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 16px; }
+    .timer {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 16px;
+    }
 
-    /* Styling soal & paragraf bacaan */
-    .soal-wrapper { font-size: 16px; line-height: 1.7; color: #0f172a; margin-bottom: 18px; }
-    .soal-pengantar { font-weight: 600; margin-bottom: 10px; }
+    /* Styling soal, gambar & paragraf bacaan */
+    .soal-wrapper { font-size: 16px; line-height: 1.72; color: var(--text); margin-bottom: 16px; }
+    .soal-pengantar { font-weight: 700; margin-bottom: 10px; }
     .bacaan-box {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
-      border-left: 4px solid #0f766e;
-      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
       padding: 14px 16px;
       margin: 10px 0 14px;
       font-weight: 400;
@@ -53,24 +182,109 @@
     .bacaan-box p:last-child { margin-bottom: 0; }
     .soal-tanya { font-weight: 600; margin-top: 8px; }
 
-    .opsi-item { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; line-height: 1.5; }
-    .opsi-item input { width: auto; margin: 3px 0 0; }
+    .gambar-soal-wrap {
+      margin: 14px 0 18px;
+      text-align: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .gambar-soal-wrap img {
+      max-width: 100%;
+      max-height: 360px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      cursor: zoom-in;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .gambar-caption {
+      margin-top: 8px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .opsi-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      line-height: 1.55;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .opsi-item:hover { border-color: #94a3b8; background: #f8fafc; }
+    .opsi-item.selected { border-color: var(--primary); background: #f0fdfa; }
+    .opsi-item input { width: auto; margin: 3px 0 0; accent-color: var(--primary); }
+
     .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; margin-top: 12px; }
-    .q-btn { padding: 8px 0; font-size: 13px; border-radius: 6px; background: #e2e8f0; color: #1e293b; }
+    .q-btn { padding: 8px 0; font-size: 13px; border-radius: 8px; background: #e2e8f0; color: #1e293b; }
     .q-btn.answered { background: #10b981; color: #fff; }
     .q-btn.doubt { background: #f59e0b; color: #fff; }
-    .q-btn.active { outline: 2px solid #0f172a; }
-    .alert { background: #fef2f2; color: #991b1b; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
-    .warn-box { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+    .q-btn.active { outline: 2.5px solid #0f172a; outline-offset: 1px; }
+
+    .alert { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+    .warn-box { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
     .hidden { display: none; }
+
+    /* Lightbox gambar soal */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 95vw; max-height: 88vh; border-radius: 10px; background: #fff; }
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      padding: 0;
+    }
+
+    @media (max-width: 600px) {
+      .brand-badge { display: none; }
+      .card { padding: 16px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- HEADER SEKOLAH & LOGO -->
+    <header class="brand-header">
+      <img
+        src="LOGO_SMP.png"
+        alt="Logo SMPNAA"
+        class="brand-logo"
+        onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');"
+      />
+      <div id="logoFallback" class="brand-fallback hidden">SMP</div>
+      <div>
+        <h1 class="brand-title">ASAS Daring — SMPNAA</h1>
+        <p class="brand-sub">Sumatif Akhir Semester • Ujian Berbasis Komputer</p>
+      </div>
+      <span class="brand-badge">TP 2026/2027</span>
+    </header>
+
     <!-- TAHAP 1: INPUT NOMOR PESERTA -->
     <div id="stepPesertaBox" class="card">
-      <h2>ASAS GANJIL SMPNAA — Identifikasi Peserta</h2>
-      <p style="color:#475569; font-size:14px;">Masukkan Nomor Peserta untuk menampilkan biodata dan jadwal ujian aktif sesuai kelas Anda.</p>
+      <h2>Identifikasi Peserta</h2>
+      <p style="color:var(--muted); font-size:14px; margin-top:-4px;">Masukkan Nomor Peserta untuk menampilkan biodata dan jadwal ujian aktif sesuai kelas Anda.</p>
       <div id="pesertaError" class="alert hidden"></div>
       <form id="cekPesertaForm">
         <label for="noPeserta">Nomor Peserta</label>
@@ -82,7 +296,7 @@
     <!-- TAHAP 2: KONFIRMASI BIODATA, JADWAL OTOMATIS SESUAI KELAS & TOKEN -->
     <div id="stepKonfirmasiBox" class="card hidden">
       <h2>Konfirmasi Biodata & Jadwal Ujian</h2>
-      <p style="color:#475569; font-size:14px;">Pastikan biodata dan paket soal di bawah ini sudah sesuai dengan jadwal sesi yang berlangsung.</p>
+      <p style="color:var(--muted); font-size:14px; margin-top:-4px;">Pastikan biodata dan paket soal di bawah ini sudah sesuai dengan jadwal sesi yang berlangsung.</p>
       <div id="konfirmasiError" class="alert hidden"></div>
       <div id="sudahSelesaiInfo" class="warn-box hidden">Anda sudah mengirimkan jawaban untuk ujian ini.</div>
 
@@ -128,14 +342,18 @@
       <div class="card topbar">
         <div>
           <strong id="infoNama"></strong> • <span id="infoKelas"></span><br/>
-          <small id="infoMapel" style="color:#475569;"></small>
+          <small id="infoMapel" style="color:var(--muted);"></small>
         </div>
         <div id="timerBox" class="timer">00:00</div>
       </div>
 
       <div class="card">
-        <div style="font-size:13px; color:#64748b; margin-bottom:6px;">Soal Nomor <span id="noSoalAktif"></span></div>
+        <div style="font-size:13px; color:#64748b; font-weight:700; margin-bottom:6px;">Soal Nomor <span id="noSoalAktif"></span></div>
         <div id="teksSoal" class="soal-wrapper"></div>
+        <div id="gambarSoalContainer" class="gambar-soal-wrap hidden">
+          <img id="gambarSoal" src="" alt="Gambar Pendukung Soal" onclick="openLightbox(this.src)" />
+          <div class="gambar-caption">Ketuk/klik gambar untuk memperbesar</div>
+        </div>
         <div id="daftarOpsi"></div>
 
         <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
@@ -155,8 +373,14 @@
     <!-- HASIL -->
     <div id="resultBox" class="card hidden">
       <h2>Ujian Selesai</h2>
-      <p id="resultSummary"></p>
+      <p id="resultSummary" style="line-height:1.65;"></p>
     </div>
+  </div>
+
+  <!-- LIGHTBOX GAMBAR -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <button type="button" class="lightbox-close" onclick="closeLightbox()" aria-label="Tutup">&times;</button>
+    <img id="lightboxImg" src="" alt="Perbesaran Gambar Soal" onclick="event.stopPropagation()" />
   </div>
 
   <script>
@@ -174,6 +398,28 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    // Mengekstrak URL gambar dari kolom gambar atau tag [GAMBAR: url] / baris URL gambar di pertanyaan
+    function extractGambarDanTeks(item) {
+      let rawText = String(item.pertanyaan || '');
+      let imgUrl = String(item.gambar || '').trim();
+
+      const tagMatch = rawText.match(/\[GAMBAR\s*:\s*([^\]]+)\]/i);
+      if (tagMatch) {
+        if (!imgUrl) imgUrl = tagMatch[1].trim();
+        rawText = rawText.replace(tagMatch[0], '').trim();
+      }
+
+      if (!imgUrl) {
+        const urlMatch = rawText.match(/(https?:\/\/\S+\.(?:png|jpe?g|gif|webp|svg)(?:\?\S*)?)/i);
+        if (urlMatch) {
+          imgUrl = urlMatch[1].trim();
+          rawText = rawText.replace(urlMatch[0], '').trim();
+        }
+      }
+
+      return { cleanText: rawText, imgUrl };
     }
 
     function formatPertanyaanHtml(rawText) {
@@ -211,6 +457,17 @@
         <div class="bacaan-box">${paragrafBacaan}</div>
         <div class="soal-tanya">${escapeHtml(tanyaTerakhir).replace(/\n/g, '<br>')}</div>
       `;
+    }
+
+    function openLightbox(src) {
+      if (!src) return;
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightboxImg').src = '';
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -383,8 +640,20 @@
     function renderQuestion(idx) {
       currentIdx = idx;
       const item = state.soal[idx];
+      const { cleanText, imgUrl } = extractGambarDanTeks(item);
+
       document.getElementById('noSoalAktif').textContent = `${item.no} dari ${state.soal.length}`;
-      document.getElementById('teksSoal').innerHTML = formatPertanyaanHtml(item.pertanyaan);
+      document.getElementById('teksSoal').innerHTML = formatPertanyaanHtml(cleanText);
+
+      const gbrWrap = document.getElementById('gambarSoalContainer');
+      const gbrEl = document.getElementById('gambarSoal');
+      if (imgUrl) {
+        gbrEl.src = imgUrl;
+        gbrWrap.classList.remove('hidden');
+      } else {
+        gbrEl.src = '';
+        gbrWrap.classList.add('hidden');
+      }
 
       const btnFinish = document.getElementById('btnFinish');
       const isLastQuestion = idx === state.soal.length - 1;
@@ -397,18 +666,19 @@
         const teksOpsi = item.opsi[huruf];
         if (!teksOpsi) return;
 
+        const isChecked = state.jawaban[String(item.no)] === huruf;
         const label = document.createElement('label');
-        label.className = 'opsi-item';
+        label.className = 'opsi-item' + (isChecked ? ' selected' : '');
 
         const radio = document.createElement('input');
         radio.type = 'radio';
         radio.name = 'opsiSoal';
         radio.value = huruf;
-        radio.checked = state.jawaban[String(item.no)] === huruf;
+        radio.checked = isChecked;
         radio.addEventListener('change', () => {
           state.jawaban[String(item.no)] = huruf;
           saveState();
-          renderNavGrid();
+          renderQuestion(idx);
         });
 
         const span = document.createElement('span');
