@@ -14,9 +14,24 @@
     input, select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px; font-size: 15px; }
     button { cursor: pointer; border: none; border-radius: 8px; padding: 11px 16px; font-size: 15px; font-weight: 600; }
     .btn-primary { background: #0f766e; color: #fff; width: 100%; }
+    .btn-secondary { background: #e2e8f0; color: #1e293b; }
     .btn-nav { background: #e2e8f0; color: #1e293b; }
     .btn-warn { background: #f59e0b; color: #fff; }
     .btn-finish { background: #1d4ed8; color: #fff; }
+
+    .biodata-box {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-left: 4px solid #0f766e;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .biodata-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px dashed #ccfbf1; font-size: 14.5px; }
+    .biodata-row:last-child { border-bottom: none; }
+    .biodata-label { color: #475569; font-weight: 500; }
+    .biodata-val { color: #0f172a; font-weight: 700; text-align: right; }
+
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
     .timer { background: #fee2e2; color: #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 16px; }
 
@@ -46,27 +61,65 @@
     .q-btn.doubt { background: #f59e0b; color: #fff; }
     .q-btn.active { outline: 2px solid #0f172a; }
     .alert { background: #fef2f2; color: #991b1b; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+    .warn-box { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- FORM LOGIN -->
-    <div id="loginBox" class="card">
-      <h2>ASAS Daring — Verifikasi Peserta</h2>
-      <p style="color:#475569; font-size:14px;">Masukkan data sesuai arahan panitia/pengawas ujian.</p>
-      <div id="loginError" class="alert hidden"></div>
-      <form id="loginForm">
+    <!-- TAHAP 1: INPUT NOMOR PESERTA -->
+    <div id="stepPesertaBox" class="card">
+      <h2>ASAS Daring — Identifikasi Peserta</h2>
+      <p style="color:#475569; font-size:14px;">Masukkan Nomor Peserta untuk menampilkan biodata dan jadwal ujian aktif sesuai kelas Anda.</p>
+      <div id="pesertaError" class="alert hidden"></div>
+      <form id="cekPesertaForm">
         <label for="noPeserta">Nomor Peserta</label>
-        <input id="noPeserta" type="text" required placeholder="Contoh: 2627-07-001" />
+        <input id="noPeserta" type="text" required placeholder="Contoh: 2627-07-001" autocomplete="off" />
+        <button id="btnCekPeserta" type="submit" class="btn-primary">Lanjut & Tampilkan Biodata</button>
+      </form>
+    </div>
 
-        <label for="kodeMapel">Kode Mata Pelajaran</label>
-        <input id="kodeMapel" type="text" required placeholder="Contoh: MTK-07" />
+    <!-- TAHAP 2: KONFIRMASI BIODATA, JADWAL OTOMATIS SESUAI KELAS & TOKEN -->
+    <div id="stepKonfirmasiBox" class="card hidden">
+      <h2>Konfirmasi Biodata & Jadwal Ujian</h2>
+      <p style="color:#475569; font-size:14px;">Pastikan biodata dan paket soal di bawah ini sudah sesuai dengan jadwal sesi yang berlangsung.</p>
+      <div id="konfirmasiError" class="alert hidden"></div>
+      <div id="sudahSelesaiInfo" class="warn-box hidden">Anda sudah mengirimkan jawaban untuk ujian ini.</div>
 
+      <div class="biodata-box">
+        <div class="biodata-row">
+          <span class="biodata-label">Nomor Peserta</span>
+          <span id="bioNoPeserta" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Nama Peserta</span>
+          <span id="bioNama" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Kelas</span>
+          <span id="bioKelas" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Jadwal / Sesi Aktif</span>
+          <span id="bioJadwal" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Mata Pelajaran & Paket Kelas</span>
+          <span id="bioMapel" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Durasi Ujian</span>
+          <span id="bioDurasi" class="biodata-val"></span>
+        </div>
+      </div>
+
+      <form id="mulaiUjianForm">
         <label for="tokenUjian">Token Sesi</label>
-        <input id="tokenUjian" type="text" required placeholder="Masukkan token ujian" />
-
-        <button id="btnMulai" type="submit" class="btn-primary">Mulai Ujian</button>
+        <input id="tokenUjian" type="text" required placeholder="Masukkan token dari pengawas/panitia" autocomplete="off" />
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" id="btnGantiPeserta" class="btn-secondary">Ganti No. Peserta</button>
+          <button id="btnMulai" type="submit" class="btn-primary" style="flex:1; min-width:180px;">Mulai Ujian</button>
+        </div>
       </form>
     </div>
 
@@ -109,6 +162,7 @@
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw6NyO_oB5eYMA0in5_fR68GjREyEmVYbvzRfuu0BNS04wwy6bqsA9eFEZZa2qYjZSJEA/exec';
     let state = null;
+    let verifiedCandidate = null;
     let currentIdx = 0;
     let timerInterval = null;
 
@@ -122,7 +176,6 @@
         .replace(/"/g, '&quot;');
     }
 
-    // Mengubah pemisah baris / atau newline menjadi paragraf & baris rapi
     function formatPertanyaanHtml(rawText) {
       const normalized = String(rawText || '')
         .replace(/\r\n/g, '\n')
@@ -175,18 +228,87 @@
       }
     });
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    // Tahap 1: Cek Nomor Peserta & tampilkan biodata + jadwal otomatis sesuai kelas
+    document.getElementById('cekPesertaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const errEl = document.getElementById('loginError');
+      const errEl = document.getElementById('pesertaError');
+      const btn = document.getElementById('btnCekPeserta');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Mencari biodata...';
+
+      const noPeserta = document.getElementById('noPeserta').value.trim();
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'cek_peserta',
+            no_peserta: noPeserta
+          })
+        });
+        const json = await res.json();
+        if (!json.ok) {
+          throw new Error(json.message || 'Data peserta tidak ditemukan.');
+        }
+
+        verifiedCandidate = json.data;
+        document.getElementById('bioNoPeserta').textContent = verifiedCandidate.peserta.no_peserta;
+        document.getElementById('bioNama').textContent = verifiedCandidate.peserta.nama;
+        document.getElementById('bioKelas').textContent = verifiedCandidate.peserta.kelas;
+        document.getElementById('bioJadwal').textContent = verifiedCandidate.sesi.nama_sesi || verifiedCandidate.sesi.kode_sesi || 'Sesi Aktif';
+        document.getElementById('bioMapel').textContent = `${verifiedCandidate.sesi.nama_mapel} (${verifiedCandidate.sesi.kode_mapel})`;
+        document.getElementById('bioDurasi').textContent = `${verifiedCandidate.sesi.durasi_menit} menit`;
+
+        const warnSelesai = document.getElementById('sudahSelesaiInfo');
+        const btnMulai = document.getElementById('btnMulai');
+        const inputToken = document.getElementById('tokenUjian');
+        inputToken.value = '';
+
+        if (verifiedCandidate.sudah_selesai) {
+          warnSelesai.classList.remove('hidden');
+          btnMulai.disabled = true;
+          inputToken.disabled = true;
+        } else {
+          warnSelesai.classList.add('hidden');
+          btnMulai.disabled = false;
+          inputToken.disabled = false;
+        }
+
+        document.getElementById('stepPesertaBox').classList.add('hidden');
+        document.getElementById('stepKonfirmasiBox').classList.remove('hidden');
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Lanjut & Tampilkan Biodata';
+      }
+    });
+
+    document.getElementById('btnGantiPeserta').addEventListener('click', () => {
+      verifiedCandidate = null;
+      document.getElementById('konfirmasiError').classList.add('hidden');
+      document.getElementById('stepKonfirmasiBox').classList.add('hidden');
+      document.getElementById('stepPesertaBox').classList.remove('hidden');
+    });
+
+    // Tahap 2: Mulai ujian berdasarkan biodata, jadwal aktif & kelas otomatis
+    document.getElementById('mulaiUjianForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!verifiedCandidate) return;
+
+      const errEl = document.getElementById('konfirmasiError');
       const btn = document.getElementById('btnMulai');
       errEl.classList.add('hidden');
       btn.disabled = true;
-      btn.textContent = 'Memeriksa data...';
+      btn.textContent = 'Menyiapkan soal...';
 
       const payload = {
         action: 'mulai_ujian',
-        no_peserta: document.getElementById('noPeserta').value.trim(),
-        kode_mapel: document.getElementById('kodeMapel').value.trim(),
+        no_peserta: verifiedCandidate.peserta.no_peserta,
+        kode_sesi: verifiedCandidate.sesi.kode_sesi,
         token: document.getElementById('tokenUjian').value.trim()
       };
 
@@ -227,7 +349,8 @@
     }
 
     function showExamScreen() {
-      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('stepPesertaBox').classList.add('hidden');
+      document.getElementById('stepKonfirmasiBox').classList.add('hidden');
       document.getElementById('examBox').classList.remove('hidden');
       document.getElementById('infoNama').textContent = state.peserta.nama;
       document.getElementById('infoKelas').textContent = state.peserta.kelas;
