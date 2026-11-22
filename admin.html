@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin & Kartu Peserta — CBT ASAS SMPNAA</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+    .header {
+      background: linear-gradient(135deg, #0f766e, #115e59);
+      color: #fff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn { padding: 9px 14px; border-radius: 9px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #1e293b; }
+    .tab-btn.active { background: #0f766e; color: #fff; }
+    input, select { padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+    button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 700; }
+    .btn-primary { background: #0f766e; color: #fff; }
+    .btn-blue { background: #1d4ed8; color: #fff; }
+    .btn-amber { background: #d97706; color: #fff; }
+    .btn-gray { background: #e2e8f0; color: #1e293b; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 9px 8px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; color: #334155; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+    .b-open { background: #dcfce7; color: #166534; }
+    .b-close { background: #fee2e2; color: #991b1b; }
+    .b-done { background: #dbeafe; color: #1e40af; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+
+    /* Kartu Peserta Daring */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .kartu-peserta {
+      border: 2px solid #0f766e;
+      border-radius: 12px;
+      padding: 14px;
+      background: #fff;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .kartu-head {
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kartu-row { display: flex; justify-content: space-between; font-size: 13px; margin: 5px 0; gap: 8px; }
+    .kartu-label { color: #64748b; }
+    .kartu-val { font-weight: 700; text-align: right; }
+    .hidden { display: none; }
+
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .wrap { max-width: 100%; padding: 0; }
+      .card { box-shadow: none; border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header no-print">
+      <div>
+        <h2 style="margin:0;">Panel Panitia & Kartu Peserta Daring</h2>
+        <div style="font-size:13px; color:#ccfbf1;">SMP Nurul Abror Al-Robbaniyin • ASAS Daring</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a href="index.html" style="background:rgba(255,255,255,0.18); color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:700;">Halaman Siswa</a>
+        <button id="btnRefresh" class="btn-amber hidden" onclick="loadDashboard()">Refresh Data</button>
+      </div>
+    </div>
+
+    <!-- LOGIN ADMIN -->
+    <div id="loginCard" class="card no-print" style="max-width:420px; margin:32px auto;">
+      <h3>Masuk Panel Panitia</h3>
+      <p style="font-size:13.5px; color:#475569;">Masukkan PIN khusus panitia/pengawas.</p>
+      <div id="loginMsg" style="color:#991b1b; font-size:13.5px; margin-bottom:10px;"></div>
+      <form id="adminLoginForm">
+        <input id="adminPin" type="password" required placeholder="Masukkan PIN Panitia" style="width:100%; margin-bottom:12px;" />
+        <button type="submit" class="btn-primary" style="width:100%; padding:11px;">Masuk</button>
+      </form>
+    </div>
+
+    <!-- KONTEN ADMIN -->
+    <div id="adminContent" class="hidden">
+      <div class="tabs no-print">
+        <button class="tab-btn active" onclick="switchTab('sesi', this)">Pengaturan Sesi & Token</button>
+        <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta Daring</button>
+        <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan Hasil Ujian</button>
+      </div>
+
+      <!-- TAB 1: SESI & TOKEN -->
+      <div id="tab-sesi" class="card no-print">
+        <h3>Daftar Sesi Ujian</h3>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Kode Mapel</th>
+                <th>Nama Mapel</th>
+                <th>Durasi (Menit)</th>
+                <th>Token Sesi</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="sesiBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: KARTU PESERTA DARING -->
+      <div id="tab-kartu" class="card hidden">
+        <div class="toolbar no-print">
+          <h3 style="margin:0; margin-right:auto;">Kartu Peserta Daring</h3>
+          <select id="filterKelasKartu" onchange="renderKartuPeserta()">
+            <option value="">Semua Kelas</option>
+          </select>
+          <input id="cariPesertaKartu" type="text" placeholder="Cari nama / no. peserta..." oninput="renderKartuPeserta()" />
+          <label style="font-size:13px; display:flex; align-items:center; gap:5px;">
+            <input id="tampilTokenKartu" type="checkbox" checked onchange="renderKartuPeserta()" /> Tampilkan Token
+          </label>
+          <button class="btn-blue" onclick="window.print()">Cetak Kartu</button>
+        </div>
+
+        <div style="overflow-x:auto;" class="no-print">
+          <table>
+            <thead>
+              <tr>
+                <th>No. Peserta</th>
+                <th>Nama Siswa</th>
+                <th>Kelas</th>
+                <th>Paket Sesi</th>
+                <th>Status Izin</th>
+                <th>Status Ujian</th>
+                <th>Ubah Izin</th>
+              </tr>
+            </thead>
+            <tbody id="pesertaTableBody"></tbody>
+          </table>
+        </div>
+
+        <hr class="no-print" style="margin:20px 0; border:none; border-top:1px solid #e2e8f0;" />
+        <h4 class="no-print" style="margin:0 0 8px;">Pratinjau Kartu Peserta (Siap Cetak)</h4>
+        <div id="kartuGrid" class="cards-grid"></div>
+      </div>
+
+      <!-- TAB 3: PEMANTAUAN HASIL -->
+      <div id="tab-pantau" class="card hidden no-print">
+        <div class="toolbar">
+          <h3 style="margin:0; margin-right:auto;">Pemantauan Peserta Mengirim Jawaban</h3>
+          <input id="cariHasil" type="text" placeholder="Cari nama / no. peserta / mapel..." oninput="renderHasilTable()" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>No. Peserta</th>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Kode Mapel</th>
+                <th>Benar</th>
+                <th>Salah</th>
+                <th>Nilai Akhir</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="hasilBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw6NyO_oB5eYMA0in5_fR68GjREyEmVYbvzRfuu0BNS04wwy6bqsA9eFEZZa2qYjZSJEA/exec';
+    let adminPin = '';
+    let dashData = { sesi: [], peserta: [], hasil: [] };
+
+    function esc(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function apiPost(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ admin_pin: adminPin }, payload))
+      });
+      return await res.json();
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      adminPin = document.getElementById('adminPin').value.trim();
+      const msg = document.getElementById('loginMsg');
+      msg.textContent = '';
+
+      const json = await apiPost({ action: 'admin_login' });
+      if (!json.ok) {
+        msg.textContent = json.message || 'PIN tidak valid.';
+        return;
+      }
+
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('adminContent').classList.remove('hidden');
+      document.getElementById('btnRefresh').classList.remove('hidden');
+      await loadDashboard();
+    });
+
+    async function loadDashboard() {
+      const json = await apiPost({ action: 'admin_dashboard' });
+      if (!json.ok) {
+        alert(json.message || 'Gagal memuat data admin.');
+        return;
+      }
+      dashData = json.data;
+      renderSesiTable();
+      populateKelasFilter();
+      renderKartuPeserta();
+      renderHasilTable();
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      ['sesi', 'kartu', 'pantau'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+      });
+    }
+
+    function renderSesiTable() {
+      const tbody = document.getElementById('sesiBody');
+      tbody.innerHTML = '';
+      dashData.sesi.forEach(s => {
+        const isOpen = s.status_ujian === 'BUKA';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${esc(s.kode_mapel)}</strong></td>
+          <td>${esc(s.nama_mapel)}</td>
+          <td><input type="number" id="dur_${esc(s.kode_mapel)}" value="${s.durasi_menit}" style="width:72px;" /></td>
+          <td><input type="text" id="tok_${esc(s.kode_mapel)}" value="${esc(s.token_sesi)}" style="width:105px; text-transform:uppercase;" /></td>
+          <td><span class="badge ${isOpen ? 'b-open' : 'b-close'}">${isOpen ? 'BUKA' : (s.status_ujian || 'TUTUP')}</span></td>
+          <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="${isOpen ? 'btn-amber' : 'btn-primary'}" onclick="toggleStatusSesi('${esc(s.kode_mapel)}', '${isOpen ? 'TUTUP' : 'BUKA'}')">
+              ${isOpen ? 'Tutup Sesi' : 'Buka Sesi'}
+            </button>
+            <button class="btn-gray" onclick="simpanDetailSesi('${esc(s.kode_mapel)}')">Simpan Token/Durasi</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function toggleStatusSesi(kodeMapel, statusBaru) {
+      const json = await apiPost({ action: 'admin_update_sesi', kode_mapel: kodeMapel, status_ujian: statusBaru });
+      alert(json.message);
+      if (json.ok) await loadDashboard();
+    }
+
+    async function simpanDetailSesi(kodeMapel) {
+      const tokenVal = document.getElementById('tok_' + kodeMapel).value.trim().toUpperCase();
+      const durasiVal = Number(document.getElementById('dur_' + kodeMapel).value);
+      const json = await apiPost({
+        action: 'admin_update_sesi',
+        kode_mapel: kodeMapel,
+        token_sesi: tokenVal,
+        durasi_menit: durasiVal
+      });
+      alert(json.message);
+      if (json.ok) await loadDashboard();
+    }
+
+    function populateKelasFilter() {
+      const sel = document.getElementById('filterKelasKartu');
+      const current = sel.value;
+      const kelasSet = [...new Set(dashData.peserta.map(p => p.kelas).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">Semua Kelas</option>' +
+        kelasSet.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+      sel.value = current;
+    }
+
+    function getFilteredPeserta() {
+      const kFilter = document.getElementById('filterKelasKartu').value;
+      const q = document.getElementById('cariPesertaKartu').value.trim().toLowerCase();
+      return dashData.peserta.filter(p => {
+        const matchKelas = !kFilter || p.kelas === kFilter;
+        const matchQ = !q ||
+          p.no_peserta.toLowerCase().includes(q) ||
+          p.nama_siswa.toLowerCase().includes(q) ||
+          p.kelas.toLowerCase().includes(q);
+        return matchKelas && matchQ;
+      });
+    }
+
+    function renderKartuPeserta() {
+      const list = getFilteredPeserta();
+      const tbody = document.getElementById('pesertaTableBody');
+      const grid = document.getElementById('kartuGrid');
+      const showToken = document.getElementById('tampilTokenKartu').checked;
+
+      tbody.innerHTML = '';
+      grid.innerHTML = '';
+
+      list.forEach(p => {
+        const aktif = p.status_izin === 'AKTIF';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${esc(p.no_peserta)}</strong></td>
+          <td>${esc(p.nama_siswa)}</td>
+          <td>${esc(p.kelas)}</td>
+          <td>${p.sesi_aktif ? esc(p.sesi_aktif.kode_mapel) : '-'}</td>
+          <td><span class="badge ${aktif ? 'b-open' : 'b-close'}">${aktif ? 'AKTIF' : 'NONAKTIF'}</span></td>
+          <td>${p.sudah_submit ? `<span class="badge b-done">Selesai (${p.nilai_terakhir})</span>` : 'Belum'}</td>
+          <td>
+            <button class="btn-gray" onclick="ubahIzin('${esc(p.no_peserta)}', '${aktif ? 'NONAKTIF' : 'AKTIF'}')">
+              Set ${aktif ? 'Nonaktif' : 'Aktif'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        const kartu = document.createElement('div');
+        kartu.className = 'kartu-peserta';
+        kartu.innerHTML = `
+          <div class="kartu-head">
+            <strong>KARTU PESERTA CBT</strong>
+            <span style="font-size:11.5px; font-weight:700; color:#0f766e;">${esc(p.kelas || '-')}</span>
+          </div>
+          <div class="kartu-row"><span class="kartu-label">No. Peserta</span><span class="kartu-val">${esc(p.no_peserta)}</span></div>
+          <div class="kartu-row"><span class="kartu-label">Nama</span><span class="kartu-val">${esc(p.nama_siswa)}</span></div>
+          <div class="kartu-row"><span class="kartu-label">Paket Sesi</span><span class="kartu-val">${p.sesi_aktif ? esc(p.sesi_aktif.kode_mapel) : 'Menunggu Jadwal'}</span></div>
+          ${showToken ? `<div class="kartu-row"><span class="kartu-label">Token</span><span class="kartu-val">${p.sesi_aktif && p.sesi_aktif.status_ujian === 'BUKA' ? esc(p.sesi_aktif.token_sesi) : '-'}</span></div>` : ''}
+        `;
+        grid.appendChild(kartu);
+      });
+    }
+
+    async function ubahIzin(noPeserta, statusBaru) {
+      const json = await apiPost({ action: 'admin_update_izin', no_peserta: noPeserta, status_izin: statusBaru });
+      if (!json.ok) alert(json.message);
+      await loadDashboard();
+    }
+
+    function renderHasilTable() {
+      const q = document.getElementById('cariHasil').value.trim().toLowerCase();
+      const tbody = document.getElementById('hasilBody');
+      tbody.innerHTML = '';
+
+      dashData.hasil
+        .filter(h => !q ||
+          h.no_peserta.toLowerCase().includes(q) ||
+          h.nama_siswa.toLowerCase().includes(q) ||
+          h.kelas.toLowerCase().includes(q) ||
+          h.kode_mapel.toLowerCase().includes(q)
+        )
+        .forEach(h => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${esc(h.no_peserta)}</td>
+            <td><strong>${esc(h.nama_siswa)}</strong></td>
+            <td>${esc(h.kelas)}</td>
+            <td>${esc(h.kode_mapel)}</td>
+            <td>${h.benar}</td>
+            <td>${h.salah}</td>
+            <td><strong>${h.nilai_akhir}</strong></td>
+            <td><span class="badge b-done">${esc(h.status_submit || 'NORMAL')}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+    }
+  </script>
+</body>
+</html>
