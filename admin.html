@@ -329,12 +329,19 @@
 
       list.forEach(p => {
         const aktif = p.status_izin === 'AKTIF';
+        const labelPaketTabel = p.sesi_aktif
+          ? `${p.sesi_aktif.kode_mapel}${p.sesi_aktif.nama_mapel ? ' • ' + p.sesi_aktif.nama_mapel : ''}`
+          : '-';
+        const labelPaketKartu = p.sesi_aktif
+          ? `${p.sesi_aktif.kode_mapel}${p.sesi_aktif.nama_mapel ? ' (' + p.sesi_aktif.nama_mapel + ')' : ''}`
+          : 'Menunggu Jadwal';
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${esc(p.no_peserta)}</strong></td>
           <td>${esc(p.nama_siswa)}</td>
           <td>${esc(p.kelas)}</td>
-          <td>${p.sesi_aktif ? esc(p.sesi_aktif.kode_mapel) : '-'}</td>
+          <td>${esc(labelPaketTabel)}</td>
           <td><span class="badge ${aktif ? 'b-open' : 'b-close'}">${aktif ? 'AKTIF' : 'NONAKTIF'}</span></td>
           <td>${p.sudah_submit ? `<span class="badge b-done">Selesai (${p.nilai_terakhir})</span>` : 'Belum'}</td>
           <td>
@@ -354,7 +361,7 @@
           </div>
           <div class="kartu-row"><span class="kartu-label">No. Peserta</span><span class="kartu-val">${esc(p.no_peserta)}</span></div>
           <div class="kartu-row"><span class="kartu-label">Nama</span><span class="kartu-val">${esc(p.nama_siswa)}</span></div>
-          <div class="kartu-row"><span class="kartu-label">Paket Sesi</span><span class="kartu-val">${p.sesi_aktif ? esc(p.sesi_aktif.kode_mapel) : 'Menunggu Jadwal'}</span></div>
+          <div class="kartu-row"><span class="kartu-label">Paket Sesi</span><span class="kartu-val">${esc(labelPaketKartu)}</span></div>
           ${showToken ? `<div class="kartu-row"><span class="kartu-label">Token</span><span class="kartu-val">${p.sesi_aktif && p.sesi_aktif.status_ujian === 'BUKA' ? esc(p.sesi_aktif.token_sesi) : '-'}</span></div>` : ''}
         `;
         grid.appendChild(kartu);
