@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    .wrap { max-width: 1140px; margin: 0 auto; padding: 20px 16px 40px; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 40px; }
     .header {
       background: linear-gradient(135deg, #0f766e, #115e59);
       color: #fff;
@@ -18,8 +18,31 @@
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
+
+    /* Ringkasan Statistik Cepat */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #0f766e;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .stat-card.amber { border-left-color: #d97706; }
+    .stat-card.blue { border-left-color: #1d4ed8; }
+    .stat-card.emerald { border-left-color: #059669; }
+    .stat-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; }
+    .stat-num { font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px; }
+    .stat-sub { font-size: 12px; color: #475569; margin-top: 2px; }
+
     .card {
       background: #fff;
       border-radius: 14px;
@@ -31,11 +54,12 @@
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .tab-btn { padding: 9px 14px; border-radius: 9px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #1e293b; }
     .tab-btn.active { background: #0f766e; color: #fff; }
-    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
+    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
     button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; }
     .btn-primary { background: #0f766e; color: #fff; }
     .btn-blue { background: #1d4ed8; color: #fff; }
     .btn-amber { background: #d97706; color: #fff; }
+    .btn-red { background: #dc2626; color: #fff; }
     .btn-gray { background: #e2e8f0; color: #1e293b; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { border-bottom: 1px solid #e2e8f0; padding: 8px 7px; text-align: left; vertical-align: middle; }
@@ -44,9 +68,26 @@
     .b-open { background: #dcfce7; color: #166534; }
     .b-close { background: #fee2e2; color: #991b1b; }
     .b-done { background: #dbeafe; color: #1e40af; }
-    .b-auto { background: #fef3c7; color: #92400e; }
+    .b-warn { background: #fef3c7; color: #92400e; }
     .sub-note { display: block; font-size: 11px; color: #64748b; margin-top: 3px; }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+
+    /* Form Tambah Sesi */
+    .add-sesi-box {
+      background: #f8fafc;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .add-sesi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+    .field-mini label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .field-mini input, .field-mini select { width: 100%; }
 
     .cards-grid {
       display: grid;
@@ -87,7 +128,7 @@
   <div class="wrap">
     <div class="header no-print">
       <div>
-        <h2 style="margin:0;">Panel Panitia & Kartu Peserta Daring</h2>
+        <h2 style="margin:0;">Panel Panitia &amp; Kartu Peserta Daring</h2>
         <div style="font-size:13px; color:#ccfbf1;">SMP Nurul Abror Al-Robbaniyin • ASAS Daring</div>
       </div>
       <div style="display:flex; gap:8px;">
@@ -109,15 +150,91 @@
 
     <!-- KONTEN ADMIN -->
     <div id="adminContent" class="hidden">
+      <!-- RINGKASAN STATISTIK CEPAT -->
+      <div class="stats-grid no-print">
+        <div class="stat-card">
+          <div class="stat-label">Total Peserta Daring</div>
+          <div id="statTotalPeserta" class="stat-num">0</div>
+          <div id="statPesertaAktifSub" class="stat-sub">0 izin aktif</div>
+        </div>
+        <div class="stat-card emerald">
+          <div class="stat-label">Sesi Ujian Terbuka</div>
+          <div id="statSesiBuka" class="stat-num">0</div>
+          <div id="statTotalSesiSub" class="stat-sub">dari 0 paket sesi</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Jawaban Terkirim</div>
+          <div id="statHasilMasuk" class="stat-num">0</div>
+          <div class="stat-sub">log hasil ujian terekam</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Kesiapan Bank Soal</div>
+          <div id="statBankSoalSiap" class="stat-num">0/0</div>
+          <div class="stat-sub">paket sesi sudah berisi soal</div>
+        </div>
+      </div>
+
       <div class="tabs no-print">
-        <button class="tab-btn active" onclick="switchTab('sesi', this)">Jadwal, Sesi & Token</button>
+        <button class="tab-btn active" onclick="switchTab('sesi', this)">Jadwal, Sesi &amp; Token</button>
         <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta Daring</button>
-        <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan Hasil Ujian</button>
+        <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan &amp; Rekap Hasil</button>
       </div>
 
       <!-- TAB 1: JADWAL, SESI & TOKEN -->
       <div id="tab-sesi" class="card no-print">
-        <h3>Jadwal & Pengaturan Sesi Ujian</h3>
+        <div class="toolbar">
+          <h3 style="margin:0; margin-right:auto;">Jadwal &amp; Pengaturan Sesi Ujian</h3>
+          <button type="button" class="btn-primary" onclick="toggleTambahSesi()">+ Tambah Sesi / Mapel Baru</button>
+        </div>
+
+        <div id="formTambahSesiBox" class="add-sesi-box hidden">
+          <strong style="display:block; margin-bottom:10px; font-size:13.5px;">Tambah Jadwal Sesi Baru (Misal: TRK-07, TRK-08, TRK-09)</strong>
+          <form id="addSesiForm" class="add-sesi-grid">
+            <div class="field-mini">
+              <label>Kode Mapel *</label>
+              <input id="newKodeMapel" type="text" required placeholder="Contoh: TRK-07" style="text-transform:uppercase;" />
+            </div>
+            <div class="field-mini">
+              <label>Nama Mapel *</label>
+              <input id="newNamaMapel" type="text" required placeholder="Contoh: TARIKH" style="text-transform:uppercase;" />
+            </div>
+            <div class="field-mini">
+              <label>Hari</label>
+              <input id="newHari" type="text" placeholder="Sabtu" />
+            </div>
+            <div class="field-mini">
+              <label>Tanggal</label>
+              <input id="newTanggal" type="text" placeholder="2026-12-05" />
+            </div>
+            <div class="field-mini">
+              <label>Sesi Ke-</label>
+              <input id="newSesiKe" type="text" placeholder="2" />
+            </div>
+            <div class="field-mini">
+              <label>Pukul</label>
+              <input id="newPukul" type="text" placeholder="09:30 - 11:00" />
+            </div>
+            <div class="field-mini">
+              <label>Durasi (Menit)</label>
+              <input id="newDurasi" type="number" value="90" min="5" />
+            </div>
+            <div class="field-mini">
+              <label>Token Sesi *</label>
+              <input id="newToken" type="text" required placeholder="Contoh: T07K" style="text-transform:uppercase;" />
+            </div>
+            <div class="field-mini">
+              <label>Mode Jadwal</label>
+              <select id="newModeJadwal">
+                <option value="MANUAL">MANUAL</option>
+                <option value="OTOMATIS">OTOMATIS</option>
+              </select>
+            </div>
+            <div class="field-mini">
+              <button type="submit" class="btn-blue" style="width:100%;">Simpan Sesi Baru</button>
+            </div>
+          </form>
+        </div>
+
         <p style="font-size:12.5px; color:#64748b; margin-top:-4px;">
           Jika <strong>MODE_JADWAL</strong> diset <strong>OTOMATIS</strong>, buka/tutup sesi mengikuti <strong>TANGGAL</strong> &amp; <strong>PUKUL</strong>. Jika <strong>MANUAL</strong>, buka/tutup mengikuti tombol sesi.
         </p>
@@ -180,11 +297,18 @@
         <div id="kartuGrid" class="cards-grid"></div>
       </div>
 
-      <!-- TAB 3: PEMANTAUAN HASIL -->
+      <!-- TAB 3: PEMANTAUAN & REKAP HASIL -->
       <div id="tab-pantau" class="card hidden no-print">
         <div class="toolbar">
-          <h3 style="margin:0; margin-right:auto;">Pemantauan Peserta Mengirim Jawaban</h3>
-          <input id="cariHasil" type="text" placeholder="Cari nama / no. peserta / mapel..." oninput="renderHasilTable()" />
+          <h3 style="margin:0; margin-right:auto;">Pemantauan &amp; Rekap Hasil Ujian</h3>
+          <select id="filterKelasHasil" onchange="renderHasilTable()">
+            <option value="">Semua Kelas</option>
+          </select>
+          <select id="filterMapelHasil" onchange="renderHasilTable()">
+            <option value="">Semua Mapel</option>
+          </select>
+          <input id="cariHasil" type="text" placeholder="Cari nama / no. peserta..." oninput="renderHasilTable()" />
+          <button type="button" class="btn-primary" onclick="exportHasilCsv()">Unduh CSV (Excel)</button>
         </div>
         <div style="overflow-x:auto;">
           <table>
@@ -198,6 +322,7 @@
                 <th>Salah</th>
                 <th>Nilai Akhir</th>
                 <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="hasilBody"></tbody>
@@ -263,10 +388,26 @@
         return;
       }
       dashData = json.data;
+      renderStats();
       renderSesiTable();
-      populateKelasFilter();
+      populateFilters();
       renderKartuPeserta();
       renderHasilTable();
+    }
+
+    function renderStats() {
+      const totalPeserta = dashData.peserta.length;
+      const aktifPeserta = dashData.peserta.filter(p => p.status_izin === 'AKTIF').length;
+      const totalSesi = dashData.sesi.length;
+      const bukaSesi = dashData.sesi.filter(s => s.status_ujian === 'BUKA').length;
+      const sesiAdaSoal = dashData.sesi.filter(s => (s.jumlah_soal || 0) > 0).length;
+
+      document.getElementById('statTotalPeserta').textContent = totalPeserta;
+      document.getElementById('statPesertaAktifSub').textContent = `${aktifPeserta} izin aktif • ${totalPeserta - aktifPeserta} nonaktif`;
+      document.getElementById('statSesiBuka').textContent = bukaSesi;
+      document.getElementById('statTotalSesiSub').textContent = `dari ${totalSesi} paket sesi terdaftar`;
+      document.getElementById('statHasilMasuk').textContent = dashData.hasil.length;
+      document.getElementById('statBankSoalSiap').textContent = `${sesiAdaSoal}/${totalSesi}`;
     }
 
     function switchTab(name, btn) {
@@ -277,6 +418,34 @@
       });
     }
 
+    function toggleTambahSesi() {
+      document.getElementById('formTambahSesiBox').classList.toggle('hidden');
+    }
+
+    document.getElementById('addSesiForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const json = await apiPost({
+        action: 'admin_add_sesi',
+        kode_mapel: document.getElementById('newKodeMapel').value.trim().toUpperCase(),
+        nama_mapel: document.getElementById('newNamaMapel').value.trim().toUpperCase(),
+        hari: document.getElementById('newHari').value.trim(),
+        tanggal: document.getElementById('newTanggal').value.trim(),
+        sesi: document.getElementById('newSesiKe').value.trim(),
+        pukul: document.getElementById('newPukul').value.trim(),
+        durasi_menit: Number(document.getElementById('newDurasi').value) || 90,
+        token_sesi: document.getElementById('newToken').value.trim().toUpperCase(),
+        mode_jadwal: document.getElementById('newModeJadwal').value,
+        status_ujian: 'TUTUP'
+      });
+      alert(json.message);
+      if (json.ok) {
+        e.target.reset();
+        document.getElementById('newDurasi').value = 90;
+        document.getElementById('formTambahSesiBox').classList.add('hidden');
+        await loadDashboard();
+      }
+    });
+
     function renderSesiTable() {
       const tbody = document.getElementById('sesiBody');
       tbody.innerHTML = '';
@@ -285,10 +454,14 @@
         const j = s.jadwal || {};
         const isOpen = s.status_ujian === 'BUKA';
         const isAuto = (j.mode_jadwal === 'OTOMATIS');
+        const jmlSoal = Number(s.jumlah_soal || 0);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${k}</strong></td>
+          <td>
+            <strong>${k}</strong>
+            <span class="sub-note">${jmlSoal > 0 ? jmlSoal + ' soal siap' : '<span style="color:#b45309;">0 soal di BANK_SOAL</span>'}</span>
+          </td>
           <td>${esc(s.nama_mapel)}</td>
           <td><input type="text" id="hari_${k}" value="${esc(j.hari || '')}" placeholder="Sabtu" style="width:76px;" /></td>
           <td><input type="text" id="tgl_${k}" value="${esc(j.tanggal || '')}" placeholder="2026-12-05" style="width:105px;" /></td>
@@ -339,13 +512,34 @@
       if (json.ok) await loadDashboard();
     }
 
-    function populateKelasFilter() {
-      const sel = document.getElementById('filterKelasKartu');
-      const current = sel.value;
-      const kelasSet = [...new Set(dashData.peserta.map(p => p.kelas).filter(Boolean))].sort();
-      sel.innerHTML = '<option value="">Semua Kelas</option>' +
+    function populateFilters() {
+      const kelasSet = [...new Set([
+        ...dashData.peserta.map(p => p.kelas),
+        ...dashData.hasil.map(h => h.kelas)
+      ].filter(Boolean))].sort();
+
+      const selKartu = document.getElementById('filterKelasKartu');
+      const curKartu = selKartu.value;
+      selKartu.innerHTML = '<option value="">Semua Kelas</option>' +
         kelasSet.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
-      sel.value = current;
+      selKartu.value = curKartu;
+
+      const selKelasHasil = document.getElementById('filterKelasHasil');
+      const curKelasHasil = selKelasHasil.value;
+      selKelasHasil.innerHTML = '<option value="">Semua Kelas</option>' +
+        kelasSet.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+      selKelasHasil.value = curKelasHasil;
+
+      const mapelSet = [...new Set([
+        ...dashData.sesi.map(s => s.kode_mapel),
+        ...dashData.hasil.map(h => h.kode_mapel)
+      ].filter(Boolean))].sort();
+
+      const selMapelHasil = document.getElementById('filterMapelHasil');
+      const curMapelHasil = selMapelHasil.value;
+      selMapelHasil.innerHTML = '<option value="">Semua Mapel</option>' +
+        mapelSet.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      selMapelHasil.value = curMapelHasil;
     }
 
     function getFilteredPeserta() {
@@ -420,32 +614,95 @@
       await loadDashboard();
     }
 
-    function renderHasilTable() {
+    function getFilteredHasil() {
+      const kFilter = document.getElementById('filterKelasHasil').value;
+      const mFilter = document.getElementById('filterMapelHasil').value;
       const q = document.getElementById('cariHasil').value.trim().toLowerCase();
-      const tbody = document.getElementById('hasilBody');
-      tbody.innerHTML = '';
-
-      dashData.hasil
-        .filter(h => !q ||
+      return dashData.hasil.filter(h => {
+        const matchK = !kFilter || h.kelas === kFilter;
+        const matchM = !mFilter || h.kode_mapel === mFilter;
+        const matchQ = !q ||
           h.no_peserta.toLowerCase().includes(q) ||
           h.nama_siswa.toLowerCase().includes(q) ||
           h.kelas.toLowerCase().includes(q) ||
-          h.kode_mapel.toLowerCase().includes(q)
-        )
-        .forEach(h => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${esc(h.no_peserta)}</td>
-            <td><strong>${esc(h.nama_siswa)}</strong></td>
-            <td>${esc(h.kelas)}</td>
-            <td>${esc(h.kode_mapel)}</td>
-            <td>${h.benar}</td>
-            <td>${h.salah}</td>
-            <td><strong>${h.nilai_akhir}</strong></td>
-            <td><span class="badge b-done">${esc(h.status_submit || 'NORMAL')}</span></td>
-          `;
-          tbody.appendChild(tr);
-        });
+          h.kode_mapel.toLowerCase().includes(q);
+        return matchK && matchM && matchQ;
+      });
+    }
+
+    function renderHasilTable() {
+      const list = getFilteredHasil();
+      const tbody = document.getElementById('hasilBody');
+      tbody.innerHTML = '';
+
+      list.forEach(h => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${esc(h.no_peserta)}</td>
+          <td><strong>${esc(h.nama_siswa)}</strong></td>
+          <td>${esc(h.kelas)}</td>
+          <td>${esc(h.kode_mapel)}</td>
+          <td>${h.benar}</td>
+          <td>${h.salah}</td>
+          <td><strong>${h.nilai_akhir}</strong></td>
+          <td><span class="badge b-done">${esc(h.status_submit || 'NORMAL')}</span></td>
+          <td>
+            <button type="button" class="btn-red" onclick="resetHasilPeserta('${esc(h.id_log)}', '${esc(h.nama_siswa)}', '${esc(h.kode_mapel)}')">
+              Reset Ujian
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function resetHasilPeserta(idLog, namaSiswa, kodeMapel) {
+      const konfirmasi = confirm(
+        `Yakin ingin me-reset hasil ujian milik ${namaSiswa} (${kodeMapel})?\n\n` +
+        `Data jawaban lama pada log ${idLog} akan dihapus agar siswa dapat mengerjakan ulang.`
+      );
+      if (!konfirmasi) return;
+
+      const json = await apiPost({ action: 'admin_reset_hasil', id_log: idLog });
+      alert(json.message);
+      if (json.ok) await loadDashboard();
+    }
+
+    function exportHasilCsv() {
+      const rows = getFilteredHasil();
+      if (rows.length === 0) {
+        alert('Tidak ada data hasil ujian yang sesuai dengan filter untuk diunduh.');
+        return;
+      }
+
+      const headers = ['NO_PESERTA', 'NAMA_SISWA', 'KELAS', 'KODE_MAPEL', 'BENAR', 'SALAH', 'NILAI_AKHIR', 'STATUS_SUBMIT'];
+      const csvLines = [headers.join(',')];
+
+      rows.forEach(r => {
+        const line = [
+          r.no_peserta,
+          r.nama_siswa,
+          r.kelas,
+          r.kode_mapel,
+          r.benar,
+          r.salah,
+          r.nilai_akhir,
+          r.status_submit || 'NORMAL'
+        ].map(val => `"${String(val ?? '').replace(/"/g, '""')}"`);
+        csvLines.push(line.join(','));
+      });
+
+      const blob = new Blob(['\uFEFF' + csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const kFilter = document.getElementById('filterKelasHasil').value || 'SemuaKelas';
+      const mFilter = document.getElementById('filterMapelHasil').value || 'SemuaMapel';
+      a.href = url;
+      a.download = `Rekap_ASAS_${mFilter}_${kFilter}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
