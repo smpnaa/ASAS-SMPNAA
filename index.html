@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CBT ASAS — SMPNAA</title>
+  <title>CBT ASAS Daring — SMPNAA</title>
   <style>
     :root {
       --primary: #0f766e;
@@ -30,7 +30,6 @@
 
     .container { max-width: 780px; margin: 0 auto; padding: 20px 16px 36px; }
 
-    /* Brand Header */
     .brand-header {
       background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
       color: #fff;
@@ -164,7 +163,6 @@
       font-size: 16px;
     }
 
-    /* Styling soal, gambar & paragraf bacaan */
     .soal-wrapper { font-size: 16px; line-height: 1.72; color: var(--text); margin-bottom: 16px; }
     .soal-pengantar { font-weight: 700; margin-bottom: 10px; }
     .bacaan-box {
@@ -199,11 +197,7 @@
       cursor: zoom-in;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     }
-    .gambar-caption {
-      margin-top: 8px;
-      font-size: 12.5px;
-      color: var(--muted);
-    }
+    .gambar-caption { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
 
     .opsi-item {
       display: flex;
@@ -231,7 +225,6 @@
     .warn-box { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
     .hidden { display: none; }
 
-    /* Lightbox gambar soal */
     .lightbox {
       position: fixed;
       inset: 0;
@@ -265,7 +258,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- HEADER SEKOLAH & LOGO -->
     <header class="brand-header">
       <img
         src="LOGO_SMP.png"
@@ -296,7 +288,7 @@
     <!-- TAHAP 2: KONFIRMASI BIODATA, JADWAL OTOMATIS SESUAI KELAS & TOKEN -->
     <div id="stepKonfirmasiBox" class="card hidden">
       <h2>Konfirmasi Biodata & Jadwal Ujian</h2>
-      <p style="color:var(--muted); font-size:14px; margin-top:-4px;">Pastikan biodata dan paket soal di bawah ini sudah sesuai dengan jadwal sesi yang berlangsung.</p>
+      <p style="color:var(--muted); font-size:14px; margin-top:-4px;">Pastikan biodata, jadwal, dan paket soal di bawah ini sudah sesuai dengan sesi yang berlangsung.</p>
       <div id="konfirmasiError" class="alert hidden"></div>
       <div id="sudahSelesaiInfo" class="warn-box hidden">Anda sudah mengirimkan jawaban untuk ujian ini.</div>
 
@@ -314,8 +306,12 @@
           <span id="bioKelas" class="biodata-val"></span>
         </div>
         <div class="biodata-row">
-          <span class="biodata-label">Jadwal / Sesi Aktif</span>
-          <span id="bioJadwal" class="biodata-val"></span>
+          <span class="biodata-label">Hari / Tanggal</span>
+          <span id="bioHariTanggal" class="biodata-val"></span>
+        </div>
+        <div class="biodata-row">
+          <span class="biodata-label">Sesi & Pukul</span>
+          <span id="bioSesiPukul" class="biodata-val"></span>
         </div>
         <div class="biodata-row">
           <span class="biodata-label">Mata Pelajaran & Paket Kelas</span>
@@ -377,7 +373,6 @@
     </div>
   </div>
 
-  <!-- LIGHTBOX GAMBAR -->
   <div id="lightbox" class="lightbox" onclick="closeLightbox()">
     <button type="button" class="lightbox-close" onclick="closeLightbox()" aria-label="Tutup">&times;</button>
     <img id="lightboxImg" src="" alt="Perbesaran Gambar Soal" onclick="event.stopPropagation()" />
@@ -400,7 +395,23 @@
         .replace(/"/g, '&quot;');
     }
 
-    // Mengekstrak URL gambar dari kolom gambar atau tag [GAMBAR: url] / baris URL gambar di pertanyaan
+    function formatHariTanggal(jadwal) {
+      if (!jadwal) return '-';
+      const hari = String(jadwal.hari || '').trim();
+      const tgl = String(jadwal.tanggal || '').trim();
+      if (hari && tgl) return `${hari}, ${tgl}`;
+      return hari || tgl || '-';
+    }
+
+    function formatSesiPukul(jadwal, namaSesiFallback) {
+      if (!jadwal) return namaSesiFallback || '-';
+      const sesiKe = String(jadwal.sesi || '').trim();
+      const pukul = String(jadwal.pukul || '').trim();
+      const labelSesi = sesiKe ? `Sesi ${sesiKe}` : (namaSesiFallback || '');
+      if (labelSesi && pukul) return `${labelSesi} (${pukul})`;
+      return labelSesi || pukul || '-';
+    }
+
     function extractGambarDanTeks(item) {
       let rawText = String(item.pertanyaan || '');
       let imgUrl = String(item.gambar || '').trim();
@@ -485,7 +496,6 @@
       }
     });
 
-    // Tahap 1: Cek Nomor Peserta & tampilkan biodata + jadwal otomatis sesuai kelas
     document.getElementById('cekPesertaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errEl = document.getElementById('pesertaError');
@@ -511,10 +521,13 @@
         }
 
         verifiedCandidate = json.data;
+        const jadwal = verifiedCandidate.sesi.jadwal || {};
+
         document.getElementById('bioNoPeserta').textContent = verifiedCandidate.peserta.no_peserta;
         document.getElementById('bioNama').textContent = verifiedCandidate.peserta.nama;
         document.getElementById('bioKelas').textContent = verifiedCandidate.peserta.kelas;
-        document.getElementById('bioJadwal').textContent = verifiedCandidate.sesi.nama_sesi || verifiedCandidate.sesi.kode_sesi || 'Sesi Aktif';
+        document.getElementById('bioHariTanggal').textContent = formatHariTanggal(jadwal);
+        document.getElementById('bioSesiPukul').textContent = formatSesiPukul(jadwal, verifiedCandidate.sesi.nama_sesi);
         document.getElementById('bioMapel').textContent = `${verifiedCandidate.sesi.nama_mapel} (${verifiedCandidate.sesi.kode_mapel})`;
         document.getElementById('bioDurasi').textContent = `${verifiedCandidate.sesi.durasi_menit} menit`;
 
@@ -551,7 +564,6 @@
       document.getElementById('stepPesertaBox').classList.remove('hidden');
     });
 
-    // Tahap 2: Mulai ujian berdasarkan biodata, jadwal aktif & kelas otomatis
     document.getElementById('mulaiUjianForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!verifiedCandidate) return;
