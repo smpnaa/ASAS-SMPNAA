@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 40px; }
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 20px 16px 40px; }
     .header {
       background: linear-gradient(135deg, #0f766e, #115e59);
       color: #fff;
@@ -21,7 +21,6 @@
       margin-bottom: 16px;
     }
 
-    /* Ringkasan Statistik Cepat */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -54,14 +53,14 @@
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .tab-btn { padding: 9px 14px; border-radius: 9px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #1e293b; }
     .tab-btn.active { background: #0f766e; color: #fff; }
-    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
-    button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; }
+    input, select { padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12.5px; background: #fff; }
+    button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 700; }
     .btn-primary { background: #0f766e; color: #fff; }
     .btn-blue { background: #1d4ed8; color: #fff; }
     .btn-amber { background: #d97706; color: #fff; }
     .btn-red { background: #dc2626; color: #fff; }
     .btn-gray { background: #e2e8f0; color: #1e293b; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     th, td { border-bottom: 1px solid #e2e8f0; padding: 8px 7px; text-align: left; vertical-align: middle; }
     th { background: #f8fafc; font-weight: 700; color: #334155; }
     .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
@@ -72,7 +71,6 @@
     .sub-note { display: block; font-size: 11px; color: #64748b; margin-top: 3px; }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
 
-    /* Form Tambah Sesi */
     .add-sesi-box {
       background: #f8fafc;
       border: 1px dashed #94a3b8;
@@ -91,7 +89,7 @@
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 14px;
       margin-top: 12px;
     }
@@ -111,9 +109,27 @@
       justify-content: space-between;
       align-items: center;
     }
-    .kartu-row { display: flex; justify-content: space-between; font-size: 12.5px; margin: 5px 0; gap: 8px; }
+    .kartu-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; gap: 8px; }
     .kartu-label { color: #64748b; }
     .kartu-val { font-weight: 700; text-align: right; }
+    .jadwal-kartu-list {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed #cbd5e1;
+    }
+    .jadwal-kartu-item {
+      font-size: 11.5px;
+      padding: 5px 7px;
+      border-radius: 7px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+    }
+    .jadwal-kartu-item:last-child { margin-bottom: 0; }
     .hidden { display: none; }
 
     @media print {
@@ -150,7 +166,6 @@
 
     <!-- KONTEN ADMIN -->
     <div id="adminContent" class="hidden">
-      <!-- RINGKASAN STATISTIK CEPAT -->
       <div class="stats-grid no-print">
         <div class="stat-card">
           <div class="stat-label">Total Peserta Daring</div>
@@ -176,7 +191,7 @@
 
       <div class="tabs no-print">
         <button class="tab-btn active" onclick="switchTab('sesi', this)">Jadwal, Sesi &amp; Token</button>
-        <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta Daring</button>
+        <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta &amp; Izin Mapel</button>
         <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan &amp; Rekap Hasil</button>
       </div>
 
@@ -188,7 +203,7 @@
         </div>
 
         <div id="formTambahSesiBox" class="add-sesi-box hidden">
-          <strong style="display:block; margin-bottom:10px; font-size:13.5px;">Tambah Jadwal Sesi Baru (Misal: TRK-07, TRK-08, TRK-09)</strong>
+          <strong style="display:block; margin-bottom:10px; font-size:13.5px;">Tambah Jadwal Sesi Baru</strong>
           <form id="addSesiForm" class="add-sesi-grid">
             <div class="field-mini">
               <label>Kode Mapel *</label>
@@ -260,19 +275,26 @@
         </div>
       </div>
 
-      <!-- TAB 2: KARTU PESERTA DARING -->
+      <!-- TAB 2: KARTU PESERTA & IZIN MAPEL -->
       <div id="tab-kartu" class="card hidden">
         <div class="toolbar no-print">
-          <h3 style="margin:0; margin-right:auto;">Kartu Peserta Daring</h3>
+          <h3 style="margin:0; margin-right:auto;">Kartu Peserta Daring &amp; Izin Mapel Khusus</h3>
           <select id="filterKelasKartu" onchange="renderKartuPeserta()">
             <option value="">Semua Kelas</option>
           </select>
           <input id="cariPesertaKartu" type="text" placeholder="Cari nama / no. peserta..." oninput="renderKartuPeserta()" />
-          <label style="font-size:13px; display:flex; align-items:center; gap:5px;">
+          <label style="font-size:12.5px; display:flex; align-items:center; gap:5px;">
             <input id="tampilTokenKartu" type="checkbox" checked onchange="renderKartuPeserta()" /> Tampilkan Token
+          </label>
+          <label style="font-size:12.5px; display:flex; align-items:center; gap:5px;">
+            <input id="tampilSemuaSesiKartu" type="checkbox" checked onchange="renderKartuPeserta()" /> Semua Sesi Kelas
           </label>
           <button class="btn-blue" onclick="window.print()">Cetak Kartu</button>
         </div>
+
+        <p class="no-print" style="font-size:12px; color:#64748b; margin-top:-4px;">
+          Isi <strong>Mapel Izin</strong> dengan <code>SEMUA</code> (atau kosongkan) untuk semua mapel sesuai kelas, atau tulis kode mapel khusus (misalnya <code>BIN-07, TARIKH-07</code>) bagi siswa yang izin mendadak/sakit hanya untuk mapel tertentu.
+        </p>
 
         <div style="overflow-x:auto;" class="no-print">
           <table>
@@ -281,11 +303,11 @@
                 <th>No. Peserta</th>
                 <th>Nama Siswa</th>
                 <th>Kelas</th>
-                <th>Paket Sesi</th>
-                <th>Jadwal</th>
+                <th>Sesi Terdaftar (Kelas)</th>
+                <th>Mapel Izin</th>
                 <th>Status Izin</th>
                 <th>Status Ujian</th>
-                <th>Ubah Izin</th>
+                <th>Aksi Izin</th>
               </tr>
             </thead>
             <tbody id="pesertaTableBody"></tbody>
@@ -341,7 +363,7 @@
       return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function ringkasJadwal(jadwal) {
+    function ringkasJadwalPendek(jadwal) {
       if (!jadwal) return '-';
       const hari = String(jadwal.hari || '').trim();
       const tgl = String(jadwal.tanggal || '').trim();
@@ -463,12 +485,12 @@
             <span class="sub-note">${jmlSoal > 0 ? jmlSoal + ' soal siap' : '<span style="color:#b45309;">0 soal di BANK_SOAL</span>'}</span>
           </td>
           <td>${esc(s.nama_mapel)}</td>
-          <td><input type="text" id="hari_${k}" value="${esc(j.hari || '')}" placeholder="Sabtu" style="width:76px;" /></td>
-          <td><input type="text" id="tgl_${k}" value="${esc(j.tanggal || '')}" placeholder="2026-12-05" style="width:105px;" /></td>
-          <td><input type="text" id="sesi_${k}" value="${esc(j.sesi || '')}" placeholder="1" style="width:48px;" /></td>
-          <td><input type="text" id="pukul_${k}" value="${esc(j.pukul || '')}" placeholder="07:30 - 09:00" style="width:112px;" /></td>
-          <td><input type="number" id="dur_${k}" value="${s.durasi_menit}" style="width:62px;" /></td>
-          <td><input type="text" id="tok_${k}" value="${esc(s.token_sesi)}" style="width:84px; text-transform:uppercase;" /></td>
+          <td><input type="text" id="hari_${k}" value="${esc(j.hari || '')}" placeholder="Sabtu" style="width:74px;" /></td>
+          <td><input type="text" id="tgl_${k}" value="${esc(j.tanggal || '')}" placeholder="2026-12-05" style="width:102px;" /></td>
+          <td><input type="text" id="sesi_${k}" value="${esc(j.sesi || '')}" placeholder="1" style="width:46px;" /></td>
+          <td><input type="text" id="pukul_${k}" value="${esc(j.pukul || '')}" placeholder="07:30 - 09:00" style="width:108px;" /></td>
+          <td><input type="number" id="dur_${k}" value="${s.durasi_menit}" style="width:58px;" /></td>
+          <td><input type="text" id="tok_${k}" value="${esc(s.token_sesi)}" style="width:80px; text-transform:uppercase;" /></td>
           <td>
             <select id="mode_${k}">
               <option value="MANUAL" ${!isAuto ? 'selected' : ''}>MANUAL</option>
@@ -550,7 +572,8 @@
         const matchQ = !q ||
           p.no_peserta.toLowerCase().includes(q) ||
           p.nama_siswa.toLowerCase().includes(q) ||
-          p.kelas.toLowerCase().includes(q);
+          p.kelas.toLowerCase().includes(q) ||
+          String(p.mapel_izin || '').toLowerCase().includes(q);
         return matchKelas && matchQ;
       });
     }
@@ -560,36 +583,62 @@
       const tbody = document.getElementById('pesertaTableBody');
       const grid = document.getElementById('kartuGrid');
       const showToken = document.getElementById('tampilTokenKartu').checked;
+      const showAllSesi = document.getElementById('tampilSemuaSesiKartu').checked;
 
       tbody.innerHTML = '';
       grid.innerHTML = '';
 
       list.forEach(p => {
         const aktif = p.status_izin === 'AKTIF';
-        const labelPaketTabel = p.sesi_aktif
-          ? `${p.sesi_aktif.kode_mapel}${p.sesi_aktif.nama_mapel ? ' • ' + p.sesi_aktif.nama_mapel : ''}`
+        const idSafe = esc(p.no_peserta).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const sesiKelas = Array.isArray(p.daftar_sesi_kelas) ? p.daftar_sesi_kelas : [];
+        const sesiDitampilkan = showAllSesi
+          ? sesiKelas
+          : (p.sesi_aktif ? [p.sesi_aktif] : []);
+
+        const ringkasanSesiTabel = sesiKelas.length > 0
+          ? sesiKelas.map(sk => `${sk.kode_mapel} (${sk.token_sesi || '-'})`).join(', ')
           : '-';
-        const labelPaketKartu = p.sesi_aktif
-          ? `${p.sesi_aktif.kode_mapel}${p.sesi_aktif.nama_mapel ? ' (' + p.sesi_aktif.nama_mapel + ')' : ''}`
-          : 'Menunggu Jadwal';
-        const jadwalText = p.sesi_aktif ? ringkasJadwal(p.sesi_aktif.jadwal) : '-';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${esc(p.no_peserta)}</strong></td>
           <td>${esc(p.nama_siswa)}</td>
           <td>${esc(p.kelas)}</td>
-          <td>${esc(labelPaketTabel)}</td>
-          <td>${esc(jadwalText)}</td>
+          <td>
+            <strong>${sesiKelas.length} paket sesi</strong>
+            <span class="sub-note">${esc(ringkasanSesiTabel)}</span>
+          </td>
+          <td>
+            <input type="text" id="mapelizin_${idSafe}" value="${esc(p.mapel_izin || 'SEMUA')}" placeholder="SEMUA atau BIN-07, TRK-07" style="width:145px; text-transform:uppercase;" />
+          </td>
           <td><span class="badge ${aktif ? 'b-open' : 'b-close'}">${aktif ? 'AKTIF' : 'NONAKTIF'}</span></td>
           <td>${p.sudah_submit ? `<span class="badge b-done">Selesai (${p.nilai_terakhir})</span>` : 'Belum'}</td>
-          <td>
-            <button class="btn-gray" onclick="ubahIzin('${esc(p.no_peserta)}', '${aktif ? 'NONAKTIF' : 'AKTIF'}')">
+          <td style="display:flex; gap:5px; flex-wrap:wrap;">
+            <button class="btn-gray" onclick="ubahIzin('${esc(p.no_peserta)}', '${aktif ? 'NONAKTIF' : 'AKTIF'}', null)">
               Set ${aktif ? 'Nonaktif' : 'Aktif'}
+            </button>
+            <button class="btn-blue" onclick="simpanMapelIzin('${esc(p.no_peserta)}', '${idSafe}')">
+              Simpan Mapel
             </button>
           </td>
         `;
         tbody.appendChild(tr);
+
+        const listHtml = sesiDitampilkan.length > 0
+          ? sesiDitampilkan.map(sk => `
+              <div class="jadwal-kartu-item">
+                <div>
+                  <strong>${esc(sk.kode_mapel)}</strong> • ${esc(sk.nama_mapel)}<br/>
+                  <span style="color:#64748b;">${esc(ringkasJadwalPendek(sk.jadwal))}</span>
+                </div>
+                <div style="text-align:right; white-space:nowrap;">
+                  ${showToken ? `<div>Token: <strong>${esc(sk.token_sesi || '-')}</strong></div>` : ''}
+                  <span style="font-size:10.5px; color:${sk.status_ujian === 'BUKA' ? '#166534' : '#64748b'}; font-weight:700;">${esc(sk.status_ujian || 'TUTUP')}</span>
+                </div>
+              </div>
+            `).join('')
+          : `<div style="font-size:12px; color:#64748b;">Belum ada sesi jadwal untuk kelas ini.</div>`;
 
         const kartu = document.createElement('div');
         kartu.className = 'kartu-peserta';
@@ -600,18 +649,29 @@
           </div>
           <div class="kartu-row"><span class="kartu-label">No. Peserta</span><span class="kartu-val">${esc(p.no_peserta)}</span></div>
           <div class="kartu-row"><span class="kartu-label">Nama</span><span class="kartu-val">${esc(p.nama_siswa)}</span></div>
-          <div class="kartu-row"><span class="kartu-label">Paket Sesi</span><span class="kartu-val">${esc(labelPaketKartu)}</span></div>
-          <div class="kartu-row"><span class="kartu-label">Jadwal</span><span class="kartu-val">${esc(jadwalText)}</span></div>
-          ${showToken ? `<div class="kartu-row"><span class="kartu-label">Token</span><span class="kartu-val">${p.sesi_aktif && p.sesi_aktif.status_ujian === 'BUKA' ? esc(p.sesi_aktif.token_sesi) : '-'}</span></div>` : ''}
+          <div class="kartu-row"><span class="kartu-label">Izin Daring</span><span class="kartu-val">${aktif ? 'AKTIF' : 'NONAKTIF'} (${esc(p.mapel_izin || 'SEMUA')})</span></div>
+          <div class="jadwal-kartu-list">
+            <div style="font-size:11px; font-weight:700; color:#334155; margin-bottom:5px;">Jadwal &amp; Token Sesi Kelas:</div>
+            ${listHtml}
+          </div>
         `;
         grid.appendChild(kartu);
       });
     }
 
-    async function ubahIzin(noPeserta, statusBaru) {
-      const json = await apiPost({ action: 'admin_update_izin', no_peserta: noPeserta, status_izin: statusBaru });
-      if (!json.ok) alert(json.message);
-      await loadDashboard();
+    async function ubahIzin(noPeserta, statusBaru, mapelIzinVal) {
+      const payload = { action: 'admin_update_izin', no_peserta: noPeserta };
+      if (statusBaru !== null) payload.status_izin = statusBaru;
+      if (mapelIzinVal !== null) payload.mapel_izin = mapelIzinVal;
+
+      const json = await apiPost(payload);
+      alert(json.message);
+      if (json.ok) await loadDashboard();
+    }
+
+    async function simpanMapelIzin(noPeserta, idSafe) {
+      const val = document.getElementById('mapelizin_' + idSafe).value.trim().toUpperCase();
+      await ubahIzin(noPeserta, null, val || 'SEMUA');
     }
 
     function getFilteredHasil() {
