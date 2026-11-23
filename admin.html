@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 20px 16px 40px; }
     .header {
       background: linear-gradient(135deg, #0f766e, #115e59);
       color: #fff;
@@ -31,25 +31,26 @@
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .tab-btn { padding: 9px 14px; border-radius: 9px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #1e293b; }
     .tab-btn.active { background: #0f766e; color: #fff; }
-    input, select { padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-    button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 700; }
+    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
+    button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; }
     .btn-primary { background: #0f766e; color: #fff; }
     .btn-blue { background: #1d4ed8; color: #fff; }
     .btn-amber { background: #d97706; color: #fff; }
     .btn-gray { background: #e2e8f0; color: #1e293b; }
-    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    th, td { border-bottom: 1px solid #e2e8f0; padding: 9px 8px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 8px 7px; text-align: left; vertical-align: middle; }
     th { background: #f8fafc; font-weight: 700; color: #334155; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
     .b-open { background: #dcfce7; color: #166534; }
     .b-close { background: #fee2e2; color: #991b1b; }
     .b-done { background: #dbeafe; color: #1e40af; }
+    .b-auto { background: #fef3c7; color: #92400e; }
+    .sub-note { display: block; font-size: 11px; color: #64748b; margin-top: 3px; }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
 
-    /* Kartu Peserta Daring */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 14px;
       margin-top: 12px;
     }
@@ -69,7 +70,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    .kartu-row { display: flex; justify-content: space-between; font-size: 13px; margin: 5px 0; gap: 8px; }
+    .kartu-row { display: flex; justify-content: space-between; font-size: 12.5px; margin: 5px 0; gap: 8px; }
     .kartu-label { color: #64748b; }
     .kartu-val { font-weight: 700; text-align: right; }
     .hidden { display: none; }
@@ -109,23 +110,31 @@
     <!-- KONTEN ADMIN -->
     <div id="adminContent" class="hidden">
       <div class="tabs no-print">
-        <button class="tab-btn active" onclick="switchTab('sesi', this)">Pengaturan Sesi & Token</button>
+        <button class="tab-btn active" onclick="switchTab('sesi', this)">Jadwal, Sesi & Token</button>
         <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta Daring</button>
         <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan Hasil Ujian</button>
       </div>
 
-      <!-- TAB 1: SESI & TOKEN -->
+      <!-- TAB 1: JADWAL, SESI & TOKEN -->
       <div id="tab-sesi" class="card no-print">
-        <h3>Daftar Sesi Ujian</h3>
+        <h3>Jadwal & Pengaturan Sesi Ujian</h3>
+        <p style="font-size:12.5px; color:#64748b; margin-top:-4px;">
+          Jika <strong>MODE_JADWAL</strong> diset <strong>OTOMATIS</strong>, buka/tutup sesi mengikuti <strong>TANGGAL</strong> &amp; <strong>PUKUL</strong>. Jika <strong>MANUAL</strong>, buka/tutup mengikuti tombol sesi.
+        </p>
         <div style="overflow-x:auto;">
           <table>
             <thead>
               <tr>
                 <th>Kode Mapel</th>
                 <th>Nama Mapel</th>
-                <th>Durasi (Menit)</th>
-                <th>Token Sesi</th>
-                <th>Status</th>
+                <th>Hari</th>
+                <th>Tanggal</th>
+                <th>Sesi</th>
+                <th>Pukul</th>
+                <th>Durasi</th>
+                <th>Token</th>
+                <th>Mode</th>
+                <th>Status Efektif</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -156,6 +165,7 @@
                 <th>Nama Siswa</th>
                 <th>Kelas</th>
                 <th>Paket Sesi</th>
+                <th>Jadwal</th>
                 <th>Status Izin</th>
                 <th>Status Ujian</th>
                 <th>Ubah Izin</th>
@@ -204,6 +214,19 @@
 
     function esc(s) {
       return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function ringkasJadwal(jadwal) {
+      if (!jadwal) return '-';
+      const hari = String(jadwal.hari || '').trim();
+      const tgl = String(jadwal.tanggal || '').trim();
+      const sesiKe = String(jadwal.sesi || '').trim();
+      const pukul = String(jadwal.pukul || '').trim();
+
+      const bagian1 = [hari, tgl].filter(Boolean).join(', ');
+      const bagian2 = [sesiKe ? `Sesi ${sesiKe}` : '', pukul].filter(Boolean).join(' • ');
+      if (bagian1 && bagian2) return `${bagian1} | ${bagian2}`;
+      return bagian1 || bagian2 || '-';
     }
 
     async function apiPost(payload) {
@@ -258,19 +281,36 @@
       const tbody = document.getElementById('sesiBody');
       tbody.innerHTML = '';
       dashData.sesi.forEach(s => {
+        const k = esc(s.kode_mapel);
+        const j = s.jadwal || {};
         const isOpen = s.status_ujian === 'BUKA';
+        const isAuto = (j.mode_jadwal === 'OTOMATIS');
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${esc(s.kode_mapel)}</strong></td>
+          <td><strong>${k}</strong></td>
           <td>${esc(s.nama_mapel)}</td>
-          <td><input type="number" id="dur_${esc(s.kode_mapel)}" value="${s.durasi_menit}" style="width:72px;" /></td>
-          <td><input type="text" id="tok_${esc(s.kode_mapel)}" value="${esc(s.token_sesi)}" style="width:105px; text-transform:uppercase;" /></td>
-          <td><span class="badge ${isOpen ? 'b-open' : 'b-close'}">${isOpen ? 'BUKA' : (s.status_ujian || 'TUTUP')}</span></td>
-          <td style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button class="${isOpen ? 'btn-amber' : 'btn-primary'}" onclick="toggleStatusSesi('${esc(s.kode_mapel)}', '${isOpen ? 'TUTUP' : 'BUKA'}')">
+          <td><input type="text" id="hari_${k}" value="${esc(j.hari || '')}" placeholder="Sabtu" style="width:76px;" /></td>
+          <td><input type="text" id="tgl_${k}" value="${esc(j.tanggal || '')}" placeholder="2026-12-05" style="width:105px;" /></td>
+          <td><input type="text" id="sesi_${k}" value="${esc(j.sesi || '')}" placeholder="1" style="width:48px;" /></td>
+          <td><input type="text" id="pukul_${k}" value="${esc(j.pukul || '')}" placeholder="07:30 - 09:00" style="width:112px;" /></td>
+          <td><input type="number" id="dur_${k}" value="${s.durasi_menit}" style="width:62px;" /></td>
+          <td><input type="text" id="tok_${k}" value="${esc(s.token_sesi)}" style="width:84px; text-transform:uppercase;" /></td>
+          <td>
+            <select id="mode_${k}">
+              <option value="MANUAL" ${!isAuto ? 'selected' : ''}>MANUAL</option>
+              <option value="OTOMATIS" ${isAuto ? 'selected' : ''}>OTOMATIS</option>
+            </select>
+          </td>
+          <td>
+            <span class="badge ${isOpen ? 'b-open' : 'b-close'}">${isOpen ? 'BUKA' : 'TUTUP'}</span>
+            <span class="sub-note">${esc(s.sumber_status || '')}${s.keterangan_jadwal ? ' • ' + esc(s.keterangan_jadwal) : ''}</span>
+          </td>
+          <td style="display:flex; flex-direction:column; gap:5px;">
+            <button class="${isOpen ? 'btn-amber' : 'btn-primary'}" onclick="toggleStatusSesi('${k}', '${isOpen ? 'TUTUP' : 'BUKA'}')">
               ${isOpen ? 'Tutup Sesi' : 'Buka Sesi'}
             </button>
-            <button class="btn-gray" onclick="simpanDetailSesi('${esc(s.kode_mapel)}')">Simpan Token/Durasi</button>
+            <button class="btn-gray" onclick="simpanDetailSesi('${k}')">Simpan Jadwal</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -284,13 +324,16 @@
     }
 
     async function simpanDetailSesi(kodeMapel) {
-      const tokenVal = document.getElementById('tok_' + kodeMapel).value.trim().toUpperCase();
-      const durasiVal = Number(document.getElementById('dur_' + kodeMapel).value);
       const json = await apiPost({
         action: 'admin_update_sesi',
         kode_mapel: kodeMapel,
-        token_sesi: tokenVal,
-        durasi_menit: durasiVal
+        hari: document.getElementById('hari_' + kodeMapel).value.trim(),
+        tanggal: document.getElementById('tgl_' + kodeMapel).value.trim(),
+        sesi: document.getElementById('sesi_' + kodeMapel).value.trim(),
+        pukul: document.getElementById('pukul_' + kodeMapel).value.trim(),
+        durasi_menit: Number(document.getElementById('dur_' + kodeMapel).value),
+        token_sesi: document.getElementById('tok_' + kodeMapel).value.trim().toUpperCase(),
+        mode_jadwal: document.getElementById('mode_' + kodeMapel).value
       });
       alert(json.message);
       if (json.ok) await loadDashboard();
@@ -335,6 +378,7 @@
         const labelPaketKartu = p.sesi_aktif
           ? `${p.sesi_aktif.kode_mapel}${p.sesi_aktif.nama_mapel ? ' (' + p.sesi_aktif.nama_mapel + ')' : ''}`
           : 'Menunggu Jadwal';
+        const jadwalText = p.sesi_aktif ? ringkasJadwal(p.sesi_aktif.jadwal) : '-';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -342,6 +386,7 @@
           <td>${esc(p.nama_siswa)}</td>
           <td>${esc(p.kelas)}</td>
           <td>${esc(labelPaketTabel)}</td>
+          <td>${esc(jadwalText)}</td>
           <td><span class="badge ${aktif ? 'b-open' : 'b-close'}">${aktif ? 'AKTIF' : 'NONAKTIF'}</span></td>
           <td>${p.sudah_submit ? `<span class="badge b-done">Selesai (${p.nilai_terakhir})</span>` : 'Belum'}</td>
           <td>
@@ -362,6 +407,7 @@
           <div class="kartu-row"><span class="kartu-label">No. Peserta</span><span class="kartu-val">${esc(p.no_peserta)}</span></div>
           <div class="kartu-row"><span class="kartu-label">Nama</span><span class="kartu-val">${esc(p.nama_siswa)}</span></div>
           <div class="kartu-row"><span class="kartu-label">Paket Sesi</span><span class="kartu-val">${esc(labelPaketKartu)}</span></div>
+          <div class="kartu-row"><span class="kartu-label">Jadwal</span><span class="kartu-val">${esc(jadwalText)}</span></div>
           ${showToken ? `<div class="kartu-row"><span class="kartu-label">Token</span><span class="kartu-val">${p.sesi_aktif && p.sesi_aktif.status_ujian === 'BUKA' ? esc(p.sesi_aktif.token_sesi) : '-'}</span></div>` : ''}
         `;
         grid.appendChild(kartu);
