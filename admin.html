@@ -69,7 +69,7 @@
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .tab-btn { padding: 9px 14px; border-radius: 9px; border: none; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #1e293b; }
     .tab-btn.active { background: #0f766e; color: #fff; }
-    input, select { padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12.5px; background: #fff; }
+    input, select, textarea { padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12.5px; background: #fff; }
     button { cursor: pointer; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 700; }
     .btn-primary { background: #0f766e; color: #fff; }
     .btn-blue { background: #1d4ed8; color: #fff; }
@@ -102,6 +102,16 @@
     }
     .field-mini label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; }
     .field-mini input, .field-mini select { width: 100%; }
+
+    .bantuan-item {
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+    }
+    .bantuan-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; margin-bottom: 6px; }
+    .bantuan-msg { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; white-space: pre-line; }
 
     .cards-grid {
       display: grid;
@@ -207,9 +217,9 @@
           <div id="statHasilSub" class="stat-sub">log hasil ujian terekam</div>
         </div>
         <div class="stat-card amber">
-          <div class="stat-label">Kesiapan Bank Soal</div>
-          <div id="statBankSoalSiap" class="stat-num">0/0</div>
-          <div class="stat-sub">paket sesi sudah berisi soal</div>
+          <div class="stat-label">Bantuan / Kendala Baru</div>
+          <div id="statBantuanBaru" class="stat-num">0</div>
+          <div id="statBankSoalSiap" class="stat-sub">0/0 paket soal siap</div>
         </div>
       </div>
 
@@ -217,6 +227,7 @@
         <button class="tab-btn active" onclick="switchTab('sesi', this)">Jadwal, Sesi &amp; Token</button>
         <button class="tab-btn" onclick="switchTab('kartu', this)">Kartu Peserta &amp; Izin Mapel</button>
         <button class="tab-btn" onclick="switchTab('pantau', this)">Pemantauan &amp; Rekap Hasil</button>
+        <button class="tab-btn" onclick="switchTab('bantuan', this)">Bantuan &amp; Kendala (<span id="badgeTabBantuan">0</span>)</button>
       </div>
 
       <!-- TAB 1: JADWAL, SESI & TOKEN -->
@@ -375,14 +386,30 @@
           </table>
         </div>
       </div>
+
+      <!-- TAB 4: BANTUAN & PERCAKAPAN KENDALA SISWA -->
+      <div id="tab-bantuan" class="card hidden no-print">
+        <div class="toolbar">
+          <h3 style="margin:0; margin-right:auto;">Bantuan &amp; Percakapan Kendala Siswa</h3>
+          <select id="filterStatusBantuan" onchange="renderBantuanList()">
+            <option value="">Semua Status</option>
+            <option value="BARU">BARU (Belum Dibalas)</option>
+            <option value="DIBALAS">DIBALAS</option>
+            <option value="SELESAI">SELESAI</option>
+          </select>
+          <input id="cariBantuan" type="text" placeholder="Cari no. peserta / nama / pesan..." oninput="renderBantuanList()" />
+        </div>
+        <div id="bantuanListContainer"></div>
+      </div>
     </div>
   </div>
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw6NyO_oB5eYMA0in5_fR68GjREyEmVYbvzRfuu0BNS04wwy6bqsA9eFEZZa2qYjZSJEA/exec';
     let adminPin = '';
-    let dashData = { sesi: [], peserta: [], hasil: [] };
+    let dashData = { sesi: [], peserta: [], hasil: [], bantuan: [] };
     let prevHasilCount = null;
+    let prevBantuanBaruCount = null;
     let autoRefreshTimer = null;
 
     function esc(s) {
@@ -465,20 +492,28 @@
         if (isManual) alert(json.message || 'Gagal memuat data admin.');
         return;
       }
-      dashData = json.data;
+      dashData = Object.assign({ sesi: [], peserta: [], hasil: [], bantuan: [] }, json.data);
 
       const curCount = dashData.hasil.length;
+      const curBantuanBaru = dashData.bantuan.filter(b => String(b.status_tiket || '').toUpperCase() === 'BARU').length;
       const pelanggaranCount = dashData.hasil.filter(h => String(h.status_submit || '').includes('PELANGGARAN_LAYAR')).length;
       const jamSekarang = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-      if (prevHasilCount !== null && curCount > prevHasilCount) {
-        const tambahan = curCount - prevHasilCount;
-        document.getElementById('toastText').textContent = `Notifikasi: +${tambahan} jawaban baru masuk! (Total ${curCount} terkirim)`;
+      const adaHasilBaru = prevHasilCount !== null && curCount > prevHasilCount;
+      const adaBantuanBaru = prevBantuanBaruCount !== null && curBantuanBaru > prevBantuanBaruCount;
+
+      if (adaHasilBaru || adaBantuanBaru) {
+        const parts = [];
+        if (adaHasilBaru) parts.push(`+${curCount - prevHasilCount} jawaban baru`);
+        if (adaBantuanBaru) parts.push(`${curBantuanBaru} pesan bantuan menunggu balasan`);
+        document.getElementById('toastText').textContent = `Notifikasi: ${parts.join(' • ')}!`;
         playNotifBeep();
       } else if (isManual) {
-        document.getElementById('toastText').textContent = `Data berhasil diperbarui. Total ${curCount} jawaban terkirim, ${pelanggaranCount} catatan pelanggaran layar.`;
+        document.getElementById('toastText').textContent = `Data diperbarui. ${curCount} jawaban terkirim • ${curBantuanBaru} pesan bantuan baru • ${pelanggaranCount} catatan layar.`;
       }
+
       prevHasilCount = curCount;
+      prevBantuanBaruCount = curBantuanBaru;
       document.getElementById('toastTime').textContent = `Pembaruan terakhir: ${jamSekarang}`;
 
       renderStats();
@@ -486,6 +521,7 @@
       populateFilters();
       renderKartuPeserta();
       renderHasilTable();
+      renderBantuanList();
     }
 
     function renderStats() {
@@ -495,6 +531,7 @@
       const bukaSesi = dashData.sesi.filter(s => s.status_ujian === 'BUKA').length;
       const sesiAdaSoal = dashData.sesi.filter(s => (s.jumlah_soal || 0) > 0).length;
       const pelanggaranCount = dashData.hasil.filter(h => String(h.status_submit || '').includes('PELANGGARAN_LAYAR')).length;
+      const bantuanBaru = dashData.bantuan.filter(b => String(b.status_tiket || '').toUpperCase() === 'BARU').length;
 
       document.getElementById('statTotalPeserta').textContent = totalPeserta;
       document.getElementById('statPesertaAktifSub').textContent = `${aktifPeserta} izin aktif • ${totalPeserta - aktifPeserta} nonaktif`;
@@ -502,13 +539,15 @@
       document.getElementById('statTotalSesiSub').textContent = `dari ${totalSesi} paket sesi terdaftar`;
       document.getElementById('statHasilMasuk').textContent = dashData.hasil.length;
       document.getElementById('statHasilSub').textContent = pelanggaranCount > 0 ? `${pelanggaranCount} perlu tinjauan layar` : 'semua status normal';
-      document.getElementById('statBankSoalSiap').textContent = `${sesiAdaSoal}/${totalSesi}`;
+      document.getElementById('statBantuanBaru').textContent = bantuanBaru;
+      document.getElementById('statBankSoalSiap').textContent = `${sesiAdaSoal}/${totalSesi} paket soal siap`;
+      document.getElementById('badgeTabBantuan').textContent = bantuanBaru;
     }
 
     function switchTab(name, btn) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      ['sesi', 'kartu', 'pantau'].forEach(t => {
+      ['sesi', 'kartu', 'pantau', 'bantuan'].forEach(t => {
         document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
       });
     }
@@ -803,6 +842,71 @@
       if (!konfirmasi) return;
 
       const json = await apiPost({ action: 'admin_reset_hasil', id_log: idLog });
+      alert(json.message);
+      if (json.ok) await loadDashboard(true);
+    }
+
+    function renderBantuanList() {
+      const box = document.getElementById('bantuanListContainer');
+      const stFilter = document.getElementById('filterStatusBantuan').value;
+      const q = document.getElementById('cariBantuan').value.trim().toLowerCase();
+
+      const list = (dashData.bantuan || []).filter(b => {
+        const matchSt = !stFilter || String(b.status_tiket || '').toUpperCase() === stFilter;
+        const matchQ = !q ||
+          String(b.no_peserta || '').toLowerCase().includes(q) ||
+          String(b.nama_siswa || '').toLowerCase().includes(q) ||
+          String(b.pesan_siswa || '').toLowerCase().includes(q) ||
+          String(b.balasan_admin || '').toLowerCase().includes(q);
+        return matchSt && matchQ;
+      });
+
+      if (list.length === 0) {
+        box.innerHTML = '<div style="font-size:13px; color:#64748b;">Belum ada pesan bantuan/kendala sesuai filter.</div>';
+        return;
+      }
+
+      box.innerHTML = list.slice().reverse().map(b => {
+        const idSafe = esc(b.id_tiket).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const st = String(b.status_tiket || 'BARU').toUpperCase();
+        const badgeCls = st === 'BARU' ? 'b-warn' : 'b-open';
+        return `
+          <div class="bantuan-item">
+            <div class="bantuan-head">
+              <div>
+                <strong>${esc(b.id_tiket)}</strong> • No. Peserta: <strong>${esc(b.no_peserta)}</strong>
+                ${b.nama_siswa ? ` (${esc(b.nama_siswa)}${b.kelas ? ' • ' + esc(b.kelas) : ''})` : ''}
+                • <span class="badge b-done">${esc(b.kategori)}</span>
+              </div>
+              <div>
+                <span class="badge ${badgeCls}">${esc(st)}</span>
+                &nbsp;<span style="color:#64748b; font-size:11.5px;">${esc(b.waktu)}</span>
+              </div>
+            </div>
+            <div class="bantuan-msg">${esc(b.pesan_siswa)}</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              <input type="text" id="balas_${idSafe}" value="${esc(b.balasan_admin || '')}" placeholder="Tulis balasan untuk siswa (info kartu, token, atau solusi)..." style="flex:1; min-width:240px;" />
+              <select id="status_tiket_${idSafe}">
+                <option value="DIBALAS" ${st === 'DIBALAS' ? 'selected' : ''}>DIBALAS</option>
+                <option value="SELESAI" ${st === 'SELESAI' ? 'selected' : ''}>SELESAI</option>
+                <option value="BARU" ${st === 'BARU' ? 'selected' : ''}>BARU</option>
+              </select>
+              <button type="button" class="btn-primary" onclick="kirimBalasanBantuan('${esc(b.id_tiket)}', '${idSafe}')">Simpan Balasan</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function kirimBalasanBantuan(idTiket, idSafe) {
+      const balasan = document.getElementById('balas_' + idSafe).value.trim();
+      const statusTiket = document.getElementById('status_tiket_' + idSafe).value;
+      const json = await apiPost({
+        action: 'admin_balas_bantuan',
+        id_tiket: idTiket,
+        balasan_admin: balasan,
+        status_tiket: statusTiket
+      });
       alert(json.message);
       if (json.ok) await loadDashboard(true);
     }
