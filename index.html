@@ -30,7 +30,7 @@
       -webkit-user-select: none;
     }
 
-    .container { max-width: 820px; margin: 0 auto; padding: 20px 16px 38px; }
+    .container { max-width: 820px; margin: 0 auto; padding: 20px 16px 42px; }
 
     .brand-header {
       background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
@@ -95,19 +95,20 @@
 
     h2, h3 { margin-top: 0; color: var(--text); }
     label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #1e293b; }
-    input, select {
+    input, select, textarea {
       width: 100%;
-      padding: 12px 14px;
+      padding: 11px 13px;
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      margin-bottom: 14px;
-      font-size: 15px;
+      margin-bottom: 12px;
+      font-size: 14.5px;
       transition: border-color 0.15s, box-shadow 0.15s;
       background: #fff;
       user-select: text;
       -webkit-user-select: text;
     }
-    input:focus {
+    textarea { min-height: 78px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
@@ -118,7 +119,7 @@
       border: none;
       border-radius: 10px;
       padding: 11px 16px;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 700;
       transition: transform 0.12s, filter 0.15s, background-color 0.15s;
     }
@@ -136,6 +137,18 @@
     .btn-finish { background: #1d4ed8; color: #fff; }
     .btn-finish:hover:not(:disabled) { background: #1e40af; }
     .btn-red { background: #dc2626; color: #fff; }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #16a34a;
+      color: #fff;
+      text-decoration: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
 
     .biodata-box {
       background: var(--soft);
@@ -255,8 +268,48 @@
     .q-btn.doubt { background: #f59e0b; color: #fff; }
     .q-btn.active { outline: 2.5px solid #0f172a; outline-offset: 1px; }
 
+    /* Kotak Bantuan & Histori Privat */
+    .help-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .help-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .ticket-card {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .ticket-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; flex-wrap: wrap; }
+    .ticket-msg { font-size: 14px; color: var(--text); margin: 4px 0 8px; white-space: pre-line; }
+    .ticket-reply {
+      background: #f0fdfa;
+      border-left: 3px solid var(--primary);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #115e59;
+      white-space: pre-line;
+    }
+    .pill-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fef3c7; color: #92400e; }
+    .pill-status.done { background: #dcfce7; color: #166534; }
+
     .alert { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
     .warn-box { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; line-height: 1.5; }
+    .ok-box { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 13.5px; line-height: 1.5; }
     .hidden { display: none; }
 
     .modal-backdrop {
@@ -442,6 +495,62 @@
       <p id="resultSummary" style="line-height:1.65;"></p>
       <button type="button" class="btn-secondary" onclick="location.reload()">Kembali ke Awal</button>
     </div>
+
+    <!-- KONTAK BANTUAN & HISTORI PERCAKAPAN PRIVAT -->
+    <div class="card">
+      <div class="help-top">
+        <div>
+          <h3 style="margin:0; font-size:16px;">Kontak Panitia &amp; Histori Kendala Privat</h3>
+          <div style="font-size:12.5px; color:var(--muted);">Permintaan info kartu ujian, izin mapel khusus, atau kendala teknis (hanya terlihat oleh No. Peserta Anda &amp; panitia).</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <a id="linkWaPanitia" href="#" target="_blank" rel="noopener" class="btn-wa">Chat WA Panitia</a>
+          <button type="button" class="btn-secondary" onclick="togglePanelBantuan()">Buka / Tutup Kotak Bantuan</button>
+        </div>
+      </div>
+
+      <div id="panelBantuan" class="help-box hidden">
+        <div id="bantuanNotif"></div>
+
+        <form id="kirimBantuanForm">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
+            <div>
+              <label for="bantuanNoPeserta">Nomor Peserta *</label>
+              <input id="bantuanNoPeserta" type="text" required placeholder="Contoh: 1234" autocomplete="off" />
+            </div>
+            <div>
+              <label for="bantuanNama">Nama Siswa</label>
+              <input id="bantuanNama" type="text" placeholder="Otomatis terisi bila terdaftar" autocomplete="off" />
+            </div>
+            <div>
+              <label for="bantuanKategori">Keperluan</label>
+              <select id="bantuanKategori">
+                <option value="KARTU_UJIAN">Info / Kirim Kartu Ujian</option>
+                <option value="KENDALA_TEKNIS">Kendala Teknis / Login / Token</option>
+                <option value="IZIN_MAPEL_KHUSUS">Izin Mapel Daring (Sakit/Izin)</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="bantuanPesan">Pesan / Rincian Kendala *</label>
+          <textarea id="bantuanPesan" required placeholder="Contoh: Mohon info jadwal & token sesi saya, atau saya izin mengikuti mapel BIN-07 dan TRK-07 secara daring..."></textarea>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnKirimBantuan" type="submit" class="btn-primary" style="flex:1; min-width:180px;">Kirim Pesan Privat</button>
+            <button type="button" class="btn-secondary" onclick="muatRiwayatBantuan()">Cek Histori No. Peserta Ini</button>
+          </div>
+        </form>
+
+        <hr style="margin:16px 0; border:none; border-top:1px solid #e2e8f0;" />
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px;">
+          <strong style="font-size:14px;">Histori Percakapan Privat Anda</strong>
+          <span id="labelHistoriNo" style="font-size:12px; color:var(--muted);">Belum dicek</span>
+        </div>
+        <div id="daftarHistoriBantuan">
+          <div style="font-size:13px; color:var(--muted);">Masukkan Nomor Peserta lalu klik <strong>Cek Histori No. Peserta Ini</strong> atau kirim pesan untuk melihat percakapan privat Anda.</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL PERINGATAN KELUAR LAYAR -->
@@ -467,6 +576,8 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw6NyO_oB5eYMA0in5_fR68GjREyEmVYbvzRfuu0BNS04wwy6bqsA9eFEZZa2qYjZSJEA/exec';
+    const KONTAK_PANITIA_WA = '6282257759986'; // Ganti dengan nomor WA panitia (format 628...)
+
     let state = null;
     let verifiedCandidate = null;
     let currentIdx = 0;
@@ -483,6 +594,132 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
     }
+
+    function updateWaLink() {
+      const noP = document.getElementById('bantuanNoPeserta').value.trim() || document.getElementById('noPeserta').value.trim();
+      const teks = encodeURIComponent(`Assalamu'alaikum Panitia ASAS SMPNAA, saya ingin meminta bantuan/info kartu ujian. No. Peserta: ${noP || '-'}`);
+      document.getElementById('linkWaPanitia').href = `https://wa.me/${KONTAK_PANITIA_WA}?text=${teks}`;
+    }
+
+    function togglePanelBantuan() {
+      const panel = document.getElementById('panelBantuan');
+      panel.classList.toggle('hidden');
+      const noAktif = (state && state.peserta && state.peserta.no_peserta)
+        || (verifiedCandidate && verifiedCandidate.peserta && verifiedCandidate.peserta.no_peserta)
+        || document.getElementById('noPeserta').value.trim();
+      if (noAktif && !document.getElementById('bantuanNoPeserta').value.trim()) {
+        document.getElementById('bantuanNoPeserta').value = noAktif;
+      }
+      if (verifiedCandidate && verifiedCandidate.peserta && !document.getElementById('bantuanNama').value.trim()) {
+        document.getElementById('bantuanNama').value = verifiedCandidate.peserta.nama || '';
+      }
+      updateWaLink();
+      if (!panel.classList.contains('hidden') && document.getElementById('bantuanNoPeserta').value.trim()) {
+        muatRiwayatBantuan();
+      }
+    }
+
+    async function muatRiwayatBantuan() {
+      const noP = document.getElementById('bantuanNoPeserta').value.trim();
+      updateWaLink();
+      const box = document.getElementById('daftarHistoriBantuan');
+      const labelNo = document.getElementById('labelHistoriNo');
+
+      if (!noP) {
+        box.innerHTML = '<div class="alert">Isi Nomor Peserta terlebih dahulu untuk melihat riwayat privat Anda.</div>';
+        return;
+      }
+
+      labelNo.textContent = `No. Peserta: ${noP}`;
+      box.innerHTML = '<div style="font-size:13px; color:var(--muted);">Memuat riwayat privat...</div>';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'riwayat_bantuan', no_peserta: noP })
+        });
+        const json = await res.json();
+        if (!json.ok) {
+          box.innerHTML = `<div class="alert">${escapeHtml(json.message || 'Gagal memuat riwayat.')}</div>`;
+          return;
+        }
+        renderRiwayatBantuan(json.data.riwayat || []);
+      } catch (err) {
+        box.innerHTML = '<div class="alert">Gagal terhubung ke server untuk memuat riwayat.</div>';
+      }
+    }
+
+    function renderRiwayatBantuan(list) {
+      const box = document.getElementById('daftarHistoriBantuan');
+      if (!list || list.length === 0) {
+        box.innerHTML = '<div style="font-size:13px; color:var(--muted);">Belum ada percakapan tersimpan untuk Nomor Peserta ini.</div>';
+        return;
+      }
+
+      box.innerHTML = list.map(t => {
+        const isDone = String(t.status_tiket || '').toUpperCase() === 'DIBALAS' || String(t.status_tiket || '').toUpperCase() === 'SELESAI';
+        return `
+          <div class="ticket-card">
+            <div class="ticket-head">
+              <strong>${escapeHtml(t.id_tiket)} • ${escapeHtml(t.kategori)}</strong>
+              <span>
+                <span class="pill-status ${isDone ? 'done' : ''}">${escapeHtml(t.status_tiket)}</span>
+                &nbsp;${escapeHtml(t.waktu)}
+              </span>
+            </div>
+            <div class="ticket-msg">${escapeHtml(t.pesan_siswa)}</div>
+            ${t.balasan_admin
+              ? `<div class="ticket-reply"><strong>Balasan Panitia${t.waktu_balas ? ' (' + escapeHtml(t.waktu_balas) + ')' : ''}:</strong>\n${escapeHtml(t.balasan_admin)}</div>`
+              : `<div style="font-size:12px; color:var(--muted);">Menunggu balasan panitia...</div>`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('kirimBantuanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const noP = document.getElementById('bantuanNoPeserta').value.trim();
+      const namaS = document.getElementById('bantuanNama').value.trim();
+      const kat = document.getElementById('bantuanKategori').value;
+      const pesan = document.getElementById('bantuanPesan').value.trim();
+      const notifEl = document.getElementById('bantuanNotif');
+      const btn = document.getElementById('btnKirimBantuan');
+
+      notifEl.innerHTML = '';
+      btn.disabled = true;
+      btn.textContent = 'Mengirim...';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'kirim_bantuan',
+            no_peserta: noP,
+            nama_siswa: namaS,
+            kategori: kat,
+            pesan: pesan
+          })
+        });
+        const json = await res.json();
+        if (!json.ok) {
+          notifEl.innerHTML = `<div class="alert">${escapeHtml(json.message || 'Gagal mengirim pesan.')}</div>`;
+          return;
+        }
+
+        notifEl.innerHTML = `<div class="ok-box">${escapeHtml(json.message)}</div>`;
+        document.getElementById('bantuanPesan').value = '';
+        document.getElementById('labelHistoriNo').textContent = `No. Peserta: ${noP}`;
+        renderRiwayatBantuan((json.data && json.data.riwayat) || []);
+      } catch (err) {
+        notifEl.innerHTML = '<div class="alert">Gagal mengirim pesan karena kendala koneksi.</div>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kirim Pesan Privat';
+      }
+    });
 
     function formatHariTanggal(jadwal) {
       if (!jadwal) return '-';
@@ -571,6 +808,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateWaLink();
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
@@ -612,6 +850,10 @@
 
         verifiedCandidate = json.data;
         const jadwal = verifiedCandidate.sesi.jadwal || {};
+
+        document.getElementById('bantuanNoPeserta').value = verifiedCandidate.peserta.no_peserta;
+        document.getElementById('bantuanNama').value = verifiedCandidate.peserta.nama;
+        updateWaLink();
 
         document.getElementById('bioNoPeserta').textContent = verifiedCandidate.peserta.no_peserta;
         document.getElementById('bioNama').textContent = verifiedCandidate.peserta.nama;
@@ -715,6 +957,10 @@
       document.getElementById('infoNama').textContent = state.peserta.nama;
       document.getElementById('infoKelas').textContent = state.peserta.kelas;
       document.getElementById('infoMapel').textContent = `${state.sesi.nama_mapel} (${state.sesi.kode_mapel})`;
+
+      document.getElementById('bantuanNoPeserta').value = state.peserta.no_peserta;
+      document.getElementById('bantuanNama').value = state.peserta.nama;
+      updateWaLink();
 
       updateFocusBadge();
       renderQuestion(0);
